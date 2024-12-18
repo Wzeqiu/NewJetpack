@@ -23,6 +23,8 @@ okhttp = "5.0.0-alpha.14"
 loggingInterceptor = "5.0.0-alpha.14"
 retrofit = "2.11.0"
 workRuntimeKtx = "2.8.1"
+utilcode = "1.30.7"
+faceDetection = "16.1.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -47,6 +49,8 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "loggingInterceptor" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
+utilcode = { group = "com.blankj", name = "utilcode", version.ref = "utilcode" }
+face-detection = { group = "com.google.mlkit", name = "face-detection", version.ref = "faceDetection" }
 
 
 [plugins]
