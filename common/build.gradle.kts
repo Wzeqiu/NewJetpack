@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     id("kotlin-parcelize")
+    id("io.objectbox")
 }
 
 android {
@@ -41,7 +42,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     api(libs.xxpermissions)
-    implementation(libs.glide)
+    api(libs.glide)
     implementation(libs.mmkv)
     implementation(libs.kotlin.reflect)
     implementation(libs.okhttp)

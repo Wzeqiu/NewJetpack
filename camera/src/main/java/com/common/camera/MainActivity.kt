@@ -15,6 +15,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.common.kt.requestPermission
+import com.wzeqiu.camera.R
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
