@@ -21,6 +21,7 @@ import com.blankj.utilcode.util.ImageUtils
 import com.blankj.utilcode.util.UriUtils
 import com.blankj.utilcode.util.Utils
 import com.common.common.R
+import com.common.utils.getMimeType
 import com.hjq.permissions.XXPermissions
 import java.io.File
 
@@ -59,22 +60,22 @@ inline fun <reified AT> Fragment.toIntent(vararg pairs: Pair<String, Any?>): Int
 fun AppCompatActivity.saveToAlbum(path: String) {
     requestPermission(MANAGE_EXTERNAL_STORAGE) {
         saveVideoToGallery(path)
-
     }
 }
 
 private fun Context.saveImageToGallery(path: String) {
+    val mime=getMimeType(FileUtils.getFileExtension(path))
     val values = ContentValues().apply {
         put(MediaStore.Images.Media.DISPLAY_NAME, FileUtils.getFileNameNoExtension(path))
-        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        put(MediaStore.Images.Media.MIME_TYPE, mime)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/${Utils.getApp().getString(R.string.app_name)}/")
+            put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/${Utils.getApp().getString(R.string.app_name)}/")
         }
     }
     contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)?.let {
         contentResolver.openOutputStream(it)?.use { outputStream ->
             ImageUtils.getBitmap(path).compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-            MediaScannerConnection.scanFile(this, arrayOf(UriUtils.uri2File(it).absolutePath), arrayOf("image/jpeg")) { _, uri ->
+            MediaScannerConnection.scanFile(this, arrayOf(UriUtils.uri2File(it).absolutePath), arrayOf(mime)) { _, uri ->
                 Log.d("MediaScanner", "Scanned $path: $uri")
             }
         }
@@ -82,9 +83,10 @@ private fun Context.saveImageToGallery(path: String) {
 }
 
 private fun Context.saveVideoToGallery(path: String) {
+    val mime=getMimeType(FileUtils.getFileExtension(path))
     val values = ContentValues().apply {
         put(MediaStore.Video.Media.DISPLAY_NAME, FileUtils.getFileNameNoExtension(path))
-        put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+        put(MediaStore.Video.Media.MIME_TYPE,mime )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES)
         }
@@ -93,7 +95,7 @@ private fun Context.saveVideoToGallery(path: String) {
         contentResolver.openOutputStream(it)?.use { outputStream ->
             File(path).inputStream().use { inputStream ->
                 inputStream.copyTo(outputStream,1024 * 1024 * 2)
-                MediaScannerConnection.scanFile(this, arrayOf(UriUtils.uri2File(it).absolutePath), arrayOf("video/mp4")) { _, uri ->
+                MediaScannerConnection.scanFile(this, arrayOf(UriUtils.uri2File(it).absolutePath), arrayOf(mime)) { _, uri ->
                     Log.d("MediaScanner", "Scanned $path: $uri")
                 }
             }
