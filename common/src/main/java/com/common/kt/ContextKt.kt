@@ -3,7 +3,6 @@ package com.common.kt
 import android.Manifest.permission.MANAGE_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VIDEO
-import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
