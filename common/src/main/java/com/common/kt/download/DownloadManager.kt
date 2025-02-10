@@ -7,7 +7,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -67,7 +66,6 @@ object DownloadManager {
                         var readLength: Int
                         var writeContentLength = 0L
                         while ((source.read(readBuffer).also { readLength = it } != -1)) {
-                            delay(500)
                             randomAccessFile.write(readBuffer, 0, readLength)
                             writeContentLength += readLength
                             downloadListener.onDownloadProgress((writeContentLength * 100 / contentLength).toInt())
