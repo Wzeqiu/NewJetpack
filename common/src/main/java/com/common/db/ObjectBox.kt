@@ -1,7 +1,6 @@
 package com.common.db
 
 import android.content.Context
-import com.common.MyObjectBox
 import io.objectbox.BoxStore
 
 object ObjectBox {

@@ -7,8 +7,8 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import java.io.File
@@ -17,7 +17,7 @@ import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeUnit
 
 private val retrofitBuilder by lazy {
-    Retrofit.Builder().baseUrl("https://www.baidu.com").client(
+    Retrofit.Builder().baseUrl("https://www.alibabagroup.com").client(
         OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).readTimeout(5, TimeUnit.SECONDS)
             .writeTimeout(5, TimeUnit.SECONDS).build()
     ).build()
@@ -39,7 +39,7 @@ object DownloadManager {
         lifecycleScope.launch {
             downloadJob = downloadFile(url, targetFile, downloadListener).also {
                 it.invokeOnCompletion {
-                    lifecycleScope.launch(Dispatchers.Main) {
+                    launch(Dispatchers.Main) {
                         lifecycle.removeObserver(lifecycleObserver)
                     }
                 }
@@ -57,31 +57,30 @@ object DownloadManager {
     private fun download(url: String, targetFile: File, downloadListener: DownloadListener): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             runCatching {
-                withContext(Dispatchers.Main) { downloadListener.onDownloadStart() }
+                downloadListener.onDownloadStart()
                 val responseBody = downloadServer.downloadFile(url)
                 val contentLength = responseBody.contentLength()
-                val readBuffer = ByteArray(1024 * 1024 * 2)
+                val readBuffer = ByteArray(1024 * 1024 * 4)
                 RandomAccessFile(targetFile, "rwd").use { randomAccessFile ->
                     randomAccessFile.setLength(contentLength)
                     responseBody.source().use { source ->
                         var readLength: Int
                         var writeContentLength = 0L
                         while ((source.read(readBuffer).also { readLength = it } != -1)) {
+                            delay(500)
                             randomAccessFile.write(readBuffer, 0, readLength)
                             writeContentLength += readLength
-                            withContext(Dispatchers.Main) {
-                                downloadListener.onDownloadProgress((writeContentLength * 100 / contentLength).toInt())
-                            }
+                            downloadListener.onDownloadProgress((writeContentLength * 100 / contentLength).toInt())
                         }
                     }
                 }
-                withContext(Dispatchers.Main) { downloadListener.onDownloadComplete() }
+                downloadListener.onDownloadComplete(targetFile)
             }.onFailure {
                 targetFile.delete()
                 if (it is CancellationException) {
-                    withContext(Dispatchers.Main) { downloadListener.onDownloadCancel() }
+                    downloadListener.onDownloadCancel()
                 } else {
-                    withContext(Dispatchers.Main) { downloadListener.onDownloadError(it) }
+                    downloadListener.onDownloadError(it)
                 }
             }
         }
@@ -91,7 +90,7 @@ object DownloadManager {
     interface DownloadListener {
         fun onDownloadStart() {}
         fun onDownloadProgress(progress: Int) {}
-        fun onDownloadComplete() {}
+        fun onDownloadComplete(targetFile: File) {}
         fun onDownloadError(throwable: Throwable) {}
         fun onDownloadCancel() {}
     }

@@ -14,10 +14,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.withRotation
 import androidx.core.graphics.withSave
 import androidx.lifecycle.lifecycleScope
+import com.common.kt.download.DownloadManager
+import com.common.kt.download.DownloadManager.bindLifeDownloadFile
+import com.common.kt.download.DownloadManager.downloadFile
 import com.common.kt.singleClick
 import com.common.kt.viewBinding
 import com.wzeqiu.newjetpack.databinding.ActivityMainBinding
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.Date
 
 
@@ -28,8 +33,32 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(viewBinding.root)
+        var downloadJob: Job? = null
         viewBinding.textView.singleClick {
-            Log.e("AAAA","CoroutineScope(Dispatchers.IO).coroutineContext===${Date()}")
+            if (downloadJob!=null){
+                downloadJob?.cancel()
+                return@singleClick
+            }
+
+             bindLifeDownloadFile("https://gips3.baidu.com/it/u=3886271102,3123389489&fm=3028&app=3028&f=JPEG&fmt=auto?w=1280&h=960",
+              File(cacheDir,"${System.currentTimeMillis()}.jpg"),object :DownloadManager.DownloadListener{
+                  override fun onDownloadComplete(targetFile: File) {
+                      Log.e("AAAAA","onDownloadComplete===$targetFile")
+                  }
+
+                  override fun onDownloadCancel() {
+                      Log.e("AAAAA","onDownloadCancel")
+                  }
+
+                  override fun onDownloadProgress(progress: Int) {
+                      Log.e("AAAAA","onDownloadProgress==$progress")
+                  }
+
+                  override fun onDownloadStart() {
+                      Log.e("AAAAA","onDownloadStart")
+                  }
+              }
+          )
         }
 
     }
