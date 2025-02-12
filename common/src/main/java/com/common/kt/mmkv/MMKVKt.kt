@@ -5,6 +5,7 @@ import com.tencent.mmkv.MMKV
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.typeOf
 
@@ -16,7 +17,7 @@ fun <V> MMKV.initializer(
 internal object UNINITIALIZED_VALUE
 
 class MMKVKeyValue<V>(
-    private val default: V,
+    private val default: V?,
     private val mmkv: MMKV,
     private val beforeChange: (oldValue: V, newValue: V) -> Boolean
 ) : ReadWriteProperty<Any?, V> {
@@ -32,15 +33,11 @@ class MMKVKeyValue<V>(
             Boolean::class -> mmkv.decodeBool(property.name, default as Boolean) as V
             Long::class -> mmkv.decodeLong(property.name, default as Long) as V
             else -> {
-                if (property.returnType.isSubtypeOf(typeOf<Parcelable>())) {
+                if ((property.returnType.classifier as KClass<*>).isSubclassOf(Parcelable::class)) {
                     val classifier = property.returnType.classifier
-                    if (classifier is KClass<*>) {
-                        mmkv.decodeParcelable(
-                            property.name, (classifier as KClass<Parcelable>).java, default as Parcelable
-                        ) as V
-                    } else {
-                        default
-                    }
+                    mmkv.decodeParcelable(
+                        property.name, (classifier as KClass<Parcelable>).java, default as? Parcelable
+                    ) as V
                 } else {
                     default
                 }
@@ -50,7 +47,7 @@ class MMKVKeyValue<V>(
     }
 
     override fun setValue(thisRef: Any?, property: KProperty<*>, value: V) {
-        if (_value != UNINITIALIZED_VALUE && !beforeChange(_value as V, value)) return
+        if (_value != UNINITIALIZED_VALUE && beforeChange(_value as V, value)) return
         when (property.returnType.classifier) {
             String::class -> mmkv.encode(property.name, value as String)
             Int::class -> mmkv.encode(property.name, value as Int)
@@ -59,7 +56,7 @@ class MMKVKeyValue<V>(
             Boolean::class -> mmkv.encode(property.name, value as Boolean)
             Long::class -> mmkv.encode(property.name, value as Long)
             else -> {
-                if (property.returnType.isSubtypeOf(typeOf<Parcelable>())) {
+                if ((property.returnType.classifier as KClass<*>).isSubclassOf(Parcelable::class)) {
                     mmkv.encode(property.name, value as Parcelable)
                 }
             }

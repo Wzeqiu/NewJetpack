@@ -17,7 +17,7 @@ object MMKVProperty {
     var mmkv_heith by mmkv.initializer(20L)
     var mmkv_widht by mmkv.initializer(30.5f)
     var mmkv_grle by mmkv.initializer(false)
-    var mmkv_person by mmkv.initializer(Person())
+    var mmkv_person by mmkv.initializer<Person?>(null)
 
 
     @Parcelize

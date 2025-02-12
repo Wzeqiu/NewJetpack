@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -58,6 +59,7 @@ inline fun <reified AT> Fragment.toIntent(vararg pairs: Pair<String, Any?>): Int
 
 fun AppCompatActivity.saveToAlbum(path: String) {
     requestPermission(MANAGE_EXTERNAL_STORAGE) {
+
         saveVideoToGallery(path)
     }
 }
