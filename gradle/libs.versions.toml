@@ -26,6 +26,7 @@ workRuntimeKtx = "2.8.1"
 utilcode = "1.30.7"
 faceDetection = "16.1.5"
 objectboxGradlePlugin = "4.0.3"
+dynamicanimation = "1.1.0-beta01"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,6 +54,7 @@ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx"
 utilcode = { group = "com.blankj", name = "utilcode", version.ref = "utilcode" }
 face-detection = { group = "com.google.mlkit", name = "face-detection", version.ref = "faceDetection" }
 objectbox-gradle-plugin = { group = "io.objectbox", name = "objectbox-gradle-plugin", version.ref = "objectboxGradlePlugin" }
+androidx-dynamicanimation = { group = "androidx.dynamicanimation", name = "dynamicanimation", version.ref = "dynamicanimation" }
 
 
 [plugins]

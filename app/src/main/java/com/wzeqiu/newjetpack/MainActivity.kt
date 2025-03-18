@@ -1,5 +1,6 @@
 package com.wzeqiu.newjetpack
 
+import android.animation.ObjectAnimator
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.LinearGradient
@@ -9,18 +10,15 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.Shader
 import android.graphics.SweepGradient
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.withRotation
 import androidx.core.graphics.withSave
-import com.common.kt.download.DownloadManager
-import com.common.kt.download.DownloadManager.bindLifeDownloadFile
-import com.common.kt.mmkv.MMKVProperty
+import androidx.dynamicanimation.animation.DynamicAnimation
+import androidx.dynamicanimation.animation.SpringAnimation
+import androidx.dynamicanimation.animation.SpringForce
 import com.common.kt.singleClick
 import com.common.kt.viewBinding
 import com.wzeqiu.newjetpack.databinding.ActivityMainBinding
-import kotlinx.coroutines.Job
-import java.io.File
 
 
 class MainActivity : AppCompatActivity() {
@@ -31,12 +29,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(viewBinding.root)
         viewBinding.textView.singleClick {
-            MMKVProperty.mmkv_person?.let {
-                Log.e("AAA", "mmkv_person===$it")
-            }?:run {
-                Log.e("AAA", " set mmkv_person")
-                MMKVProperty.mmkv_person = MMKVProperty.Person("张三", 18)
-            }
+            val spring = SpringForce(360f)
+                .setDampingRatio(SpringForce.DAMPING_RATIO_HIGH_BOUNCY)
+                .setStiffness(SpringForce.STIFFNESS_VERY_LOW)
+            val anim = SpringAnimation(viewBinding.iv, DynamicAnimation.ROTATION)
+            anim.setStartValue(0f)
+            anim.spring=spring
+            anim.start()
+
+
         }
 
     }
