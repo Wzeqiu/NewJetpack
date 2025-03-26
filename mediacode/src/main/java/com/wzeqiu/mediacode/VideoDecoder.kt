@@ -3,8 +3,10 @@ package com.wzeqiu.mediacode
 import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import android.media.MediaMetadataRetriever
 import android.os.Handler
 import android.os.HandlerThread
+import android.text.TextUtils
 import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
@@ -49,8 +51,16 @@ class VideoDecoder : SurfaceHolder.Callback {
 //        extractor.release()
     }
 
+    var width=0
+    var height=0
     fun setDataSource(path: String) {
-
+        val mmr = MediaMetadataRetriever()
+        mmr.setDataSource(path)
+        val widthStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+        val heightStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
+        mmr.release()
+        width=widthStr!!.toInt()
+        height=heightStr!!.toInt()
         selectTrack(path)
     }
 
@@ -58,7 +68,7 @@ class VideoDecoder : SurfaceHolder.Callback {
         Thread {
 
 
-            val format = MediaFormat.createVideoFormat("video/avc", 200, 200)
+            val format = MediaFormat.createVideoFormat("video/avc", width, height)
             format.setInteger(MediaFormat.KEY_FRAME_RATE, 30)
             format.setInteger(MediaFormat.KEY_BIT_RATE, 4000000)
             codec.configure(format, surface, null, 0)
