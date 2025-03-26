@@ -10,6 +10,8 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.Shader
 import android.graphics.SweepGradient
 import android.os.Bundle
+import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.withRotation
 import androidx.core.graphics.withSave
@@ -18,12 +20,19 @@ import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import com.common.kt.singleClick
 import com.common.kt.viewBinding
+import com.common.ui.media.MediaConfig
+import com.common.ui.media.MediaInfo
+import com.common.ui.media.MediaManageActivity
 import com.wzeqiu.newjetpack.databinding.ActivityMainBinding
 
 
 class MainActivity : AppCompatActivity() {
     val viewBinding by viewBinding<ActivityMainBinding>()
+    private val videoSelect = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val info= it.data?.getParcelableExtra<MediaInfo>(MediaManageActivity.RESULT_DATA)
+            info?.let {  }
 
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -27,6 +27,10 @@ utilcode = "1.30.7"
 faceDetection = "16.1.5"
 objectboxGradlePlugin = "4.0.3"
 dynamicanimation = "1.1.0-beta01"
+lifecycleViewmodelKtx = "2.8.7"
+activityKtx = "1.10.0"
+fragmentKtx = "1.8.5"
+baserecyclerviewadapterhelper4 = "4.1.6"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,6 +58,10 @@ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx"
 utilcode = { group = "com.blankj", name = "utilcode", version.ref = "utilcode" }
 face-detection = { group = "com.google.mlkit", name = "face-detection", version.ref = "faceDetection" }
 objectbox-gradle-plugin = { group = "io.objectbox", name = "objectbox-gradle-plugin", version.ref = "objectboxGradlePlugin" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
+androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
+baserecyclerviewadapterhelper4 = { group = "io.github.cymchad", name = "BaseRecyclerViewAdapterHelper4", version.ref = "baserecyclerviewadapterhelper4" }
 androidx-dynamicanimation = { group = "androidx.dynamicanimation", name = "dynamicanimation", version.ref = "dynamicanimation" }
 
 
