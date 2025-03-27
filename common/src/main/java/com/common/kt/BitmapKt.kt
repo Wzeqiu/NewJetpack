@@ -14,7 +14,7 @@ import kotlin.coroutines.resume
 import kotlin.random.Random
 
 private const val maxImageWidth = 1080
-private const val maxImageHeight = 1920
+private const val maxImageHeight = 1080
 
 
 suspend fun getCompressImagePath(path: String): String? {

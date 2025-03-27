@@ -17,8 +17,10 @@ import java.util.concurrent.TimeUnit
 
 private val retrofitBuilder by lazy {
     Retrofit.Builder().baseUrl("https://www.alibabagroup.com").client(
-        OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).readTimeout(5, TimeUnit.SECONDS)
-            .writeTimeout(5, TimeUnit.SECONDS).build()
+        OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(5, TimeUnit.SECONDS)
+            .writeTimeout(5, TimeUnit.SECONDS)
+            .build()
     ).build()
 }
 
