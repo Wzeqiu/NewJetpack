@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.wzeqiu.mediacode"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.wzeqiu.mediacode"

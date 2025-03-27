@@ -18,6 +18,7 @@ class VideoDecoder : SurfaceHolder.Callback {
     private lateinit var surface: Surface
     private val handlerThread = HandlerThread("decode").apply { start() }
     private val handler by lazy { Handler(handlerThread.looper) }
+    private var selectTrack = -1
 
     fun selectTrack(path: String) {
 
@@ -27,6 +28,8 @@ class VideoDecoder : SurfaceHolder.Callback {
         for (i in 0 until extractor.trackCount) {
             val format = extractor.getTrackFormat(i)
             if (format.getString(MediaFormat.KEY_MIME)!!.startsWith("video/")) {
+
+                selectTrack = i
                 extractor.selectTrack(i)
                 break
             }
@@ -51,16 +54,16 @@ class VideoDecoder : SurfaceHolder.Callback {
 //        extractor.release()
     }
 
-    var width=0
-    var height=0
+    var width = 0
+    var height = 0
     fun setDataSource(path: String) {
         val mmr = MediaMetadataRetriever()
         mmr.setDataSource(path)
         val widthStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
         val heightStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
         mmr.release()
-        width=widthStr!!.toInt()
-        height=heightStr!!.toInt()
+        width = widthStr!!.toInt()
+        height = heightStr!!.toInt()
         selectTrack(path)
     }
 
@@ -68,9 +71,7 @@ class VideoDecoder : SurfaceHolder.Callback {
         Thread {
 
 
-            val format = MediaFormat.createVideoFormat("video/avc", width, height)
-            format.setInteger(MediaFormat.KEY_FRAME_RATE, 30)
-            format.setInteger(MediaFormat.KEY_BIT_RATE, 4000000)
+            val format = extractor.getTrackFormat(selectTrack)
             codec.configure(format, surface, null, 0)
 
             codec.setCallback(object : MediaCodec.Callback() {
@@ -83,12 +84,22 @@ class VideoDecoder : SurfaceHolder.Callback {
                             extractor.advance()
                         } else {
                             // 发送结束标志
-                            codec.queueInputBuffer(index, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                            codec.queueInputBuffer(
+                                index,
+                                0,
+                                0,
+                                0,
+                                MediaCodec.BUFFER_FLAG_END_OF_STREAM
+                            )
                         }
                     }
                 }
 
-                override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
+                override fun onOutputBufferAvailable(
+                    codec: MediaCodec,
+                    index: Int,
+                    info: MediaCodec.BufferInfo
+                ) {
                     codec.releaseOutputBuffer(index, true)
                 }
 

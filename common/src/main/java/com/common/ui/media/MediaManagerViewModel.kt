@@ -9,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-class MediaManagerViewModel(val application: Application) : AndroidViewModel(application) {
+class MediaManagerViewModel( val APP: Application) : AndroidViewModel(APP) {
     val mediaSources = MutableLiveData<List<MediaInfo>>()
 
     fun getMediaSource(mediaConfig: MediaConfig) {
@@ -22,6 +22,10 @@ class MediaManagerViewModel(val application: Application) : AndroidViewModel(app
         }
     }
 
+    override fun <T : Application> getApplication(): T {
+        return APP as T
+    }
+
     private fun getImageSource(): List<MediaInfo> {
         val images = mutableListOf<MediaInfo>()
         val queryImage = arrayOf(MediaStore.Images.Media.DISPLAY_NAME, MediaStore.Images.Media.DATA)
@@ -29,7 +33,7 @@ class MediaManagerViewModel(val application: Application) : AndroidViewModel(app
         val selectionArgs = arrayOf("image/jpeg", "image/png")
 
 
-        application.contentResolver.query(
+        APP.contentResolver.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             queryImage, selection, selectionArgs,
             MediaStore.Images.ImageColumns.DATE_MODIFIED + " DESC"
@@ -57,7 +61,7 @@ class MediaManagerViewModel(val application: Application) : AndroidViewModel(app
         )
         val selection = MediaStore.Video.Media.MIME_TYPE + "=?"
         val selectionArgs = arrayOf("video/mp4")
-        application.contentResolver.query(
+        APP.contentResolver.query(
             MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
             queryVideo, selection, selectionArgs,
             MediaStore.Video.VideoColumns.DATE_MODIFIED + " DESC"
