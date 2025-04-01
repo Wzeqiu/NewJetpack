@@ -6,19 +6,18 @@ import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
 import android.os.Handler
 import android.os.HandlerThread
-import android.text.TextUtils
 import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 
 
 class VideoDecoder : SurfaceHolder.Callback {
-    private val codec by lazy { MediaCodec.createDecoderByType("video/avc") }
+    private var codec: MediaCodec? = null
     private val extractor by lazy { MediaExtractor() }
     private lateinit var surface: Surface
-    private val handlerThread = HandlerThread("decode").apply { start() }
+    private val handlerThread by lazy { HandlerThread("decode").apply { start() } }
     private val handler by lazy { Handler(handlerThread.looper) }
-    private var selectTrack = -1
+    private var selectVideoTrack = -1
 
     fun selectTrack(path: String) {
 
@@ -28,8 +27,7 @@ class VideoDecoder : SurfaceHolder.Callback {
         for (i in 0 until extractor.trackCount) {
             val format = extractor.getTrackFormat(i)
             if (format.getString(MediaFormat.KEY_MIME)!!.startsWith("video/")) {
-
-                selectTrack = i
+                selectVideoTrack = i
                 extractor.selectTrack(i)
                 break
             }
@@ -71,10 +69,12 @@ class VideoDecoder : SurfaceHolder.Callback {
         Thread {
 
 
-            val format = extractor.getTrackFormat(selectTrack)
-            codec.configure(format, surface, null, 0)
+            val format = extractor.getTrackFormat(selectVideoTrack)
 
-            codec.setCallback(object : MediaCodec.Callback() {
+            codec = MediaCodec.createDecoderByType(format.getString(MediaFormat.KEY_MIME)!!)
+            codec!!.configure(format, surface, null, 0)
+
+            codec!!.setCallback(object : MediaCodec.Callback() {
                 override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
                     if (index >= 0) {
                         val inputBuffer = codec.getInputBuffer(index)
@@ -109,7 +109,7 @@ class VideoDecoder : SurfaceHolder.Callback {
                 override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
                 }
             }, handler)
-            codec.start()
+            codec!!.start()
         }.start()
     }
 

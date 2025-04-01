@@ -30,13 +30,21 @@ class MediaManageActivity : AppCompatActivity() {
         mediaAdapter.setOnItemClickListener { adapter, view, position ->
             val mediaInfo = adapter.getItem(position) ?: return@setOnItemClickListener
             lifecycleScope.launch(Dispatchers.IO) {
-                getCompressImagePath(mediaInfo.path)?.let {
-                    mediaInfo.path=it
+                if (mediaConfig.originalMedia){
                     setResult(Activity.RESULT_OK, intent.putExtra(RESULT_DATA, mediaInfo))
                     finish()
-                } ?: run {
-                    // TODO: 重新选择
+                    return@launch
                 }
+                if (mediaConfig.mediaType == MediaConfig.MEDIA_TYPE_IMAGE){
+                    getCompressImagePath(mediaInfo.path)?.let {
+                        mediaInfo.path=it
+                        setResult(Activity.RESULT_OK, intent.putExtra(RESULT_DATA, mediaInfo))
+                        finish()
+                    } ?: run {
+                        // TODO: 重新选择
+                    }
+                }
+
             }
 
         }
