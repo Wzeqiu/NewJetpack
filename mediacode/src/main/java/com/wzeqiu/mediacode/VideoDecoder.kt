@@ -100,7 +100,8 @@ class VideoDecoder : SurfaceHolder.Callback {
                     index: Int,
                     info: MediaCodec.BufferInfo
                 ) {
-                    codec.releaseOutputBuffer(index, true)
+
+                    codec.releaseOutputBuffer(index, info.presentationTimeUs*1000)
                 }
 
                 override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) {
@@ -111,6 +112,10 @@ class VideoDecoder : SurfaceHolder.Callback {
             }, handler)
             codec!!.start()
         }.start()
+    }
+
+    fun seekTo(progress: Int) {
+        extractor.seekTo(progress.toLong(), MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
     }
 
 }

@@ -10,5 +10,7 @@ data class MediaInfo(
     val size: Long = 0,
     val duration: Long = 0,
     val mediaType: Int = -1,
+    val width: Int = 0,
+    val height: Int = 0,
     var isSelect: Boolean = false,
 ) : Parcelable

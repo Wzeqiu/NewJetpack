@@ -5,35 +5,35 @@ import android.provider.MediaStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 
-class MediaManagerViewModel( val APP: Application) : AndroidViewModel(APP) {
+class MediaManagerViewModel(application: Application) : AndroidViewModel(application) {
     val mediaSources = MutableLiveData<List<MediaInfo>>()
 
     fun getMediaSource(mediaConfig: MediaConfig) {
         viewModelScope.launch(Dispatchers.IO) {
             when (mediaConfig.mediaType) {
-                MediaConfig.MEDIA_TYPE_IMAGE -> mediaSources.postValue(getImageSource())
-                MediaConfig.MEDIA_TYPE_VIDEO -> mediaSources.postValue(getVideoSource())
+                MediaConfig.MEDIA_TYPE_IMAGE -> mediaSources.postValue(getImageSource(this))
+                MediaConfig.MEDIA_TYPE_VIDEO -> mediaSources.postValue(getVideoSource(this))
                 MediaConfig.MEDIA_TYPE_AUDIO -> {}
             }
         }
     }
 
-    override fun <T : Application> getApplication(): T {
-        return APP as T
-    }
 
-    private fun getImageSource(): List<MediaInfo> {
+    /**
+     *  获取系统图片资源
+     */
+    private fun getImageSource(scope: CoroutineScope): List<MediaInfo> {
         val images = mutableListOf<MediaInfo>()
         val queryImage = arrayOf(MediaStore.Images.Media.DISPLAY_NAME, MediaStore.Images.Media.DATA)
         val selection = MediaStore.Images.Media.MIME_TYPE + "=?"
         val selectionArgs = arrayOf("image/jpeg", "image/png")
-
-
-        APP.contentResolver.query(
+        getApplication<Application>().contentResolver.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             queryImage, selection, selectionArgs,
             MediaStore.Images.ImageColumns.DATE_MODIFIED + " DESC"
@@ -41,7 +41,7 @@ class MediaManagerViewModel( val APP: Application) : AndroidViewModel(APP) {
             if (it.moveToFirst()) {
                 val nameIndex = it.getColumnIndex(MediaStore.Images.ImageColumns.DISPLAY_NAME)
                 val pathIndex = it.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
-                while (it.moveToNext()) {
+                while (it.moveToNext() && scope.isActive) {
                     val name = it.getString(nameIndex)
                     val path = it.getString(pathIndex)
                     images.add(MediaInfo(name, path, mediaType = MediaConfig.MEDIA_TYPE_IMAGE))
@@ -51,7 +51,10 @@ class MediaManagerViewModel( val APP: Application) : AndroidViewModel(APP) {
         return images
     }
 
-    private fun getVideoSource(): List<MediaInfo> {
+    /**
+     * 获取系统视频资源
+     */
+    private fun getVideoSource(scope: CoroutineScope): List<MediaInfo> {
         val videos = mutableListOf<MediaInfo>()
         val queryVideo = arrayOf(
             MediaStore.Video.Media.DISPLAY_NAME,
@@ -61,7 +64,7 @@ class MediaManagerViewModel( val APP: Application) : AndroidViewModel(APP) {
         )
         val selection = MediaStore.Video.Media.MIME_TYPE + "=?"
         val selectionArgs = arrayOf("video/mp4")
-        APP.contentResolver.query(
+        getApplication<Application>().contentResolver.query(
             MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
             queryVideo, selection, selectionArgs,
             MediaStore.Video.VideoColumns.DATE_MODIFIED + " DESC"
@@ -71,8 +74,7 @@ class MediaManagerViewModel( val APP: Application) : AndroidViewModel(APP) {
                 val pathIndex = it.getColumnIndex(MediaStore.Video.VideoColumns.DATA)
                 val durationIndex = it.getColumnIndex(MediaStore.Video.VideoColumns.DURATION)
                 val sizeIndex = it.getColumnIndex(MediaStore.Video.VideoColumns.SIZE)
-                it.moveToFirst()
-                while (it.moveToNext()) {
+                while (it.moveToNext() && scope.isActive) {
                     val name = it.getString(nameIndex)
                     val path = it.getString(pathIndex)
                     val duration = it.getLong(durationIndex)
