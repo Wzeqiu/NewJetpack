@@ -10,9 +10,6 @@ object PathManager {
 
 
 
-
-
-
     fun init() {
         FileUtils.createOrExistsDir(CACHE_IMAGE)
     }
