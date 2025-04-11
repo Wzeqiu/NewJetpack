@@ -5,7 +5,6 @@ import io.objectbox.annotation.Id
 import io.objectbox.annotation.Uid
 
 @Entity(useNoArgConstructor = true)
-@Uid(254990037685929345L)
 class NewUser {
     @Id
     var id: Long = 0

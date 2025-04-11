@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.wzeqiu.workmanager"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.wzeqiu.workmanager"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
