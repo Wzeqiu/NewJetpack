@@ -1,6 +1,7 @@
 package com.wzeqiu.newjetpack
 
 import android.os.Bundle
+import android.view.Gravity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.dynamicanimation.animation.DynamicAnimation
 import androidx.dynamicanimation.animation.SpringAnimation
@@ -23,13 +24,20 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding.textView.singleClick {
-            val spring = SpringForce(360f)
-                .setDampingRatio(SpringForce.DAMPING_RATIO_HIGH_BOUNCY)
-                .setStiffness(SpringForce.STIFFNESS_VERY_LOW)
-            val anim = SpringAnimation(binding.iv, DynamicAnimation.ROTATION)
-            anim.setStartValue(0f)
-            anim.spring = spring
-            anim.start()
+            TextDialog()
+                .setWidthRatio(1f)
+                .setBackgroundAlpha(0.5f)
+                .setCancelableOnBackPress(false)
+                .setCancelableOnTouchOutside(false)
+                .setGravity(Gravity.CENTER)
+                .show(supportFragmentManager, "textdialog")
+//            val spring = SpringForce(360f)
+//                .setDampingRatio(SpringForce.DAMPING_RATIO_HIGH_BOUNCY)
+//                .setStiffness(SpringForce.STIFFNESS_VERY_LOW)
+//            val anim = SpringAnimation(binding.iv, DynamicAnimation.ROTATION)
+//            anim.setStartValue(0f)
+//            anim.spring = spring
+//            anim.start()
 
 
         }
