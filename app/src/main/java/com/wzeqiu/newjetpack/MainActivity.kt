@@ -1,6 +1,5 @@
 package com.wzeqiu.newjetpack
 
-import android.animation.ObjectAnimator
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.LinearGradient
@@ -10,40 +9,36 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.Shader
 import android.graphics.SweepGradient
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.withRotation
 import androidx.core.graphics.withSave
 import androidx.dynamicanimation.animation.DynamicAnimation
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import com.common.kt.singleClick
-import com.common.kt.viewBinding
-import com.common.ui.media.MediaConfig
+import com.common.ui.BaseActivity
 import com.common.ui.media.MediaInfo
 import com.common.ui.media.MediaManageActivity
 import com.wzeqiu.newjetpack.databinding.ActivityMainBinding
 
 
-class MainActivity : AppCompatActivity() {
-    val viewBinding by viewBinding<ActivityMainBinding>()
-    private val videoSelect = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            val info= it.data?.getParcelableExtra<MediaInfo>(MediaManageActivity.RESULT_DATA)
-            info?.let {  }
+class MainActivity : BaseActivity<ActivityMainBinding>() {
+    private val videoSelect =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val info = it.data?.getParcelableExtra<MediaInfo>(MediaManageActivity.RESULT_DATA)
+            info?.let { }
 
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(viewBinding.root)
-        viewBinding.textView.singleClick {
+        binding.textView.singleClick {
             val spring = SpringForce(360f)
                 .setDampingRatio(SpringForce.DAMPING_RATIO_HIGH_BOUNCY)
                 .setStiffness(SpringForce.STIFFNESS_VERY_LOW)
-            val anim = SpringAnimation(viewBinding.iv, DynamicAnimation.ROTATION)
+            val anim = SpringAnimation(binding.iv, DynamicAnimation.ROTATION)
             anim.setStartValue(0f)
-            anim.spring=spring
+            anim.spring = spring
             anim.start()
 
 
@@ -54,7 +49,8 @@ class MainActivity : AppCompatActivity() {
 
     fun modifyChannelColor(srcBitmap: Bitmap, color: Int): Bitmap {
         // 创建一个和原位图一样大小的位图
-        val resultBitmap = Bitmap.createBitmap(srcBitmap.getWidth(), srcBitmap.getHeight(), srcBitmap.getConfig())
+        val resultBitmap =
+            Bitmap.createBitmap(srcBitmap.getWidth(), srcBitmap.getHeight(), srcBitmap.getConfig())
 
         // 创建一个画布，在新位图上绘制
         val canvas = Canvas(resultBitmap)
@@ -72,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         val y0 = 0f
         val x1 = resultBitmap.width.toFloat()
         val y1 = resultBitmap.height.toFloat()
-        val colors1= intArrayOf(
+        val colors1 = intArrayOf(
             0xFFE91E63.toInt(), // 粉红色
             0xFF2196F3.toInt(), // 蓝色
             0xFFFFEB3B.toInt(), // 黄色
@@ -104,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         val porterDuffXfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
 
 
-        canvas.withRotation(180f,centerX,centerY) {
+        canvas.withRotation(180f, centerX, centerY) {
 
             canvas.withSave {
 
@@ -113,7 +109,13 @@ class MainActivity : AppCompatActivity() {
                 // 应用合成模式
                 paint.setXfermode(porterDuffXfermode)
                 // 绘制一个与原位图大小相同的白色矩形，这将应用SRC_IN模式，将原位图的非透明区域替换为指定颜色
-                canvas.drawRect(0f, 0f, srcBitmap.getWidth().toFloat(), srcBitmap.getHeight().toFloat(), paint)
+                canvas.drawRect(
+                    0f,
+                    0f,
+                    srcBitmap.getWidth().toFloat(),
+                    srcBitmap.getHeight().toFloat(),
+                    paint
+                )
 
                 // 清除合成模式
                 paint.setXfermode(null)
