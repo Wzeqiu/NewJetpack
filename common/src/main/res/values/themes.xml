@@ -1,0 +1,17 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- 基础对话框样式，继承自Theme.AppCompat.Dialog -->
+    <style name="BaseDialogStyle" parent="Theme.AppCompat.Dialog">
+        <!-- 设置窗口背景为透明 -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <!-- 设置对话框为浮动窗口 -->
+        <item name="android:windowIsFloating">true</item>
+        <!-- 移除窗口内容覆盖层 -->
+        <item name="android:windowContentOverlay">@null</item>
+        <!-- 隐藏对话框标题栏 -->
+        <item name="android:windowNoTitle">true</item>
+        <!-- 启用背景变暗效果 -->
+        <item name="android:backgroundDimEnabled">true</item>
+        <!-- 设置窗口为半透明 -->
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+</resources>

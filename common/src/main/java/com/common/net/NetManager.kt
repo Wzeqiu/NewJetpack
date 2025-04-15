@@ -6,11 +6,11 @@ import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
 
-private val retrofit by lazy { getRetrofit() }
+private val httpRetrofit by lazy { getRetrofit() }
 
 
 fun <T> createServer(server: Class<T>): T {
-    return retrofit.create(server)
+    return httpRetrofit.create(server)
 }
 
 
