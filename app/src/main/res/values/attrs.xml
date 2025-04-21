@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 公共自定义属性 -->
+    <declare-styleable name="ShapeViewCommon">
+        <!-- 背景颜色 -->
+        <attr name="shape_background_color" format="color" />
+        <!-- 边框颜色 -->
+        <attr name="shape_stroke_color" format="color" />
+        <!-- 边框宽度 -->
+        <attr name="shape_stroke_width" format="dimension" />
+        <!-- 圆角半径 -->
+        <attr name="shape_radius" format="dimension" />
+        <!-- 左上角圆角半径 -->
+        <attr name="shape_top_left_radius" format="dimension" />
+        <!-- 右上角圆角半径 -->
+        <attr name="shape_top_right_radius" format="dimension" />
+        <!-- 左下角圆角半径 -->
+        <attr name="shape_bottom_left_radius" format="dimension" />
+        <!-- 右下角圆角半径 -->
+        <attr name="shape_bottom_right_radius" format="dimension" />
+        <!-- 渐变开始颜色 -->
+        <attr name="shape_gradient_start_color" format="color" />
+        <!-- 渐变中间颜色 -->
+        <attr name="shape_gradient_center_color" format="color" />
+        <!-- 渐变结束颜色 -->
+        <attr name="shape_gradient_end_color" format="color" />
+        <!-- 渐变方向 -->
+        <attr name="shape_gradient_orientation" format="enum">
+            <enum name="top_bottom" value="0" />
+            <enum name="bottom_top" value="1" />
+            <enum name="left_right" value="2" />
+            <enum name="right_left" value="3" />
+            <enum name="top_left_bottom_right" value="4" />
+            <enum name="bottom_right_top_left" value="5" />
+            <enum name="top_right_bottom_left" value="6" />
+            <enum name="bottom_left_top_right" value="7" />
+        </attr>
+        <!-- 形状类型 -->
+        <attr name="shape_type" format="enum">
+            <enum name="rectangle" value="0" />
+            <enum name="oval" value="1" />
+            <enum name="line" value="2" />
+            <enum name="ring" value="3" />
+        </attr>
+    </declare-styleable>
+    
+    <!-- 自定义TextView属性 -->
+    <declare-styleable name="ShapeTextView">
+        <!-- 引用公共属性 -->
+        <attr name="shape_background_color" />
+        <attr name="shape_stroke_color" />
+        <attr name="shape_stroke_width" />
+        <attr name="shape_radius" />
+        <attr name="shape_top_left_radius" />
+        <attr name="shape_top_right_radius" />
+        <attr name="shape_bottom_left_radius" />
+        <attr name="shape_bottom_right_radius" />
+        <attr name="shape_gradient_start_color" />
+        <attr name="shape_gradient_center_color" />
+        <attr name="shape_gradient_end_color" />
+        <attr name="shape_gradient_orientation" />
+        <attr name="shape_type" />
+    </declare-styleable>
+    
+    <!-- 自定义LinearLayout属性 -->
+    <declare-styleable name="ShapeLinearLayout">
+        <!-- 引用公共属性 -->
+        <attr name="shape_background_color" />
+        <attr name="shape_stroke_color" />
+        <attr name="shape_stroke_width" />
+        <attr name="shape_radius" />
+        <attr name="shape_top_left_radius" />
+        <attr name="shape_top_right_radius" />
+        <attr name="shape_bottom_left_radius" />
+        <attr name="shape_bottom_right_radius" />
+        <attr name="shape_gradient_start_color" />
+        <attr name="shape_gradient_center_color" />
+        <attr name="shape_gradient_end_color" />
+        <attr name="shape_gradient_orientation" />
+        <attr name="shape_type" />
+    </declare-styleable>
+    
+    <!-- 自定义EditText属性 -->
+    <declare-styleable name="ShapeEditText">
+        <!-- 引用公共属性 -->
+        <attr name="shape_background_color" />
+        <attr name="shape_stroke_color" />
+        <attr name="shape_stroke_width" />
+        <attr name="shape_radius" />
+        <attr name="shape_top_left_radius" />
+        <attr name="shape_top_right_radius" />
+        <attr name="shape_bottom_left_radius" />
+        <attr name="shape_bottom_right_radius" />
+        <attr name="shape_gradient_start_color" />
+        <attr name="shape_gradient_center_color" />
+        <attr name="shape_gradient_end_color" />
+        <attr name="shape_gradient_orientation" />
+        <attr name="shape_type" />
+    </declare-styleable>
+</resources>

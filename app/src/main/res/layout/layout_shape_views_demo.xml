@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- 示例：带圆角和边框的TextView -->
+    <com.wzeqiu.newjetpack.view.ShapeTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="12dp"
+        android:text="圆角带边框的TextView"
+        android:textColor="#333333"
+        android:layout_marginBottom="16dp"
+        app:shape_background_color="#FFFFFF"
+        app:shape_radius="8dp"
+        app:shape_stroke_color="#2196F3"
+        app:shape_stroke_width="2dp" />
+
+    <!-- 示例：带渐变背景的TextView -->
+    <com.wzeqiu.newjetpack.view.ShapeTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="12dp"
+        android:text="渐变背景的TextView"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="16dp"
+        app:shape_gradient_start_color="#FF5722"
+        app:shape_gradient_end_color="#FFC107"
+        app:shape_gradient_orientation="left_right"
+        app:shape_radius="8dp" />
+
+    <!-- 示例：带圆角和边框的LinearLayout -->
+    <com.wzeqiu.newjetpack.view.ShapeLinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp"
+        app:shape_background_color="#F5F5F5"
+        app:shape_radius="8dp"
+        app:shape_stroke_color="#9C27B0"
+        app:shape_stroke_width="1dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="这是ShapeLinearLayout内的普通TextView" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="按钮" />
+
+    </com.wzeqiu.newjetpack.view.ShapeLinearLayout>
+
+    <!-- 示例：带渐变背景的LinearLayout -->
+    <com.wzeqiu.newjetpack.view.ShapeLinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp"
+        app:shape_gradient_start_color="#4CAF50"
+        app:shape_gradient_center_color="#8BC34A"
+        app:shape_gradient_end_color="#CDDC39"
+        app:shape_gradient_orientation="top_bottom"
+        app:shape_radius="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="这是渐变背景的ShapeLinearLayout"
+            android:textColor="#FFFFFF" />
+
+    </com.wzeqiu.newjetpack.view.ShapeLinearLayout>
+
+    <!-- 示例：带圆角和边框的EditText -->
+    <com.wzeqiu.newjetpack.view.ShapeEditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="带圆角和边框的EditText"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"
+        app:shape_background_color="#FFFFFF"
+        app:shape_radius="8dp"
+        app:shape_stroke_color="#3F51B5"
+        app:shape_stroke_width="1dp" />
+
+    <!-- 示例：带特殊圆角的EditText -->
+    <com.wzeqiu.newjetpack.view.ShapeEditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="只有顶部圆角的EditText"
+        android:padding="12dp"
+        app:shape_background_color="#E0E0E0"
+        app:shape_top_left_radius="8dp"
+        app:shape_top_right_radius="8dp"
+        app:shape_bottom_left_radius="0dp"
+        app:shape_bottom_right_radius="0dp" />
+
+</LinearLayout>
