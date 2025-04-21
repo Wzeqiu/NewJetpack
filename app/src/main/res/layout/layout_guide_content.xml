@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    
+    <!-- 上箭头，默认隐藏 -->
+    <ImageView
+        android:id="@+id/iv_arrow_up"
+        android:layout_width="20dp"
+        android:layout_height="10dp"
+        android:layout_gravity="top|center_horizontal"
+        android:rotation="180"
+        android:visibility="gone" />
+    
+    <!-- 下箭头，默认隐藏 -->
+    <ImageView
+        android:id="@+id/iv_arrow_down"
+        android:layout_width="20dp"
+        android:layout_height="10dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:visibility="gone" />
+    
+    <!-- 左箭头，默认隐藏 -->
+    <ImageView
+        android:id="@+id/iv_arrow_left"
+        android:layout_width="10dp"
+        android:layout_height="20dp"
+        android:layout_gravity="start|center_vertical"
+        android:rotation="270"
+        android:visibility="gone" />
+    
+    <!-- 右箭头，默认隐藏 -->
+    <ImageView
+        android:id="@+id/iv_arrow_right"
+        android:layout_width="10dp"
+        android:layout_height="20dp"
+        android:layout_gravity="end|center_vertical"
+        android:rotation="90"
+        android:visibility="gone" />
+
+    <!-- 内容容器 -->
+    <FrameLayout
+        android:id="@+id/fl_content_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            
+            <TextView
+                android:id="@+id/tv_guide_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="功能指引"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"/>
+            
+            <TextView
+                android:id="@+id/tv_guide_content"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="这是功能说明文字"
+                android:textColor="@android:color/white"/>
+            
+            <Button
+                android:id="@+id/btn_guide_next"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_gravity="center_horizontal"
+                android:text="下一步"/>
+            
+        </LinearLayout>
+    </FrameLayout>
+</FrameLayout>

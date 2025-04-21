@@ -26,6 +26,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <Button
+        android:id="@+id/btn_guide_demo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="打开引导页示例" />
+
     <com.wzeqiu.newjetpack.view.ShapeTextView
         android:layout_width="wrap_content"
         android:text="这是测试TextView"

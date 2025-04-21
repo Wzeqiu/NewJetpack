@@ -1,11 +1,9 @@
 package com.wzeqiu.newjetpack
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.dynamicanimation.animation.DynamicAnimation
-import androidx.dynamicanimation.animation.SpringAnimation
-import androidx.dynamicanimation.animation.SpringForce
 import com.common.kt.singleClick
 import com.common.ui.BaseActivity
 import com.common.ui.media.MediaInfo
@@ -38,10 +36,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 //            anim.setStartValue(0f)
 //            anim.spring = spring
 //            anim.start()
-
-
         }
-
+        
+        // 添加按钮点击事件，打开引导页示例
+        binding.btnGuideDemo.singleClick {
+            startActivity(Intent(this@MainActivity, GuidePageDemoActivity::class.java))
+        }
     }
 
 
