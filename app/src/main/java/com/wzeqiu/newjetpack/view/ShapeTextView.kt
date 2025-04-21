@@ -21,7 +21,7 @@ class ShapeTextView @JvmOverloads constructor(
 
     init {
         // 解析自定义属性
-        shapeHelper.parseAttributes(attrs, defStyleAttr, R.styleable.ShapeTextView)
+        shapeHelper.parseAttributes(attrs, defStyleAttr, R.styleable.ShapeViewCommon)
         // 应用背景
         shapeHelper.applyBackground()
     }

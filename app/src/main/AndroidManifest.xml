@@ -26,6 +26,9 @@
         <activity
             android:name=".GuidePageDemoActivity"
             android:exported="false" />
+        <activity
+            android:name=".ShapeDemoActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

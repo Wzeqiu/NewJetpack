@@ -42,6 +42,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         binding.btnGuideDemo.singleClick {
             startActivity(Intent(this@MainActivity, GuidePageDemoActivity::class.java))
         }
+        // 添加按钮点击事件ShapeDemo
+        binding.btnShapeDemo.singleClick {
+            startActivity(Intent(this@MainActivity, ShapeDemoActivity::class.java))
+        }
     }
 
 

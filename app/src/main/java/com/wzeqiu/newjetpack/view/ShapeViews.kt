@@ -22,7 +22,7 @@ class ShapeLinearLayout @JvmOverloads constructor(
 
     init {
         // 解析自定义属性
-        shapeHelper.parseAttributes( attrs, defStyleAttr, R.styleable.ShapeLinearLayout)
+        shapeHelper.parseAttributes( attrs, defStyleAttr, R.styleable.ShapeViewCommon)
         // 应用背景
         shapeHelper.applyBackground()
     }
@@ -101,7 +101,7 @@ class ShapeEditText @JvmOverloads constructor(
 
     init {
         // 解析自定义属性
-        shapeHelper.parseAttributes( attrs, defStyleAttr, R.styleable.ShapeEditText)
+        shapeHelper.parseAttributes( attrs, defStyleAttr, R.styleable.ShapeViewCommon)
         // 应用背景
         shapeHelper.applyBackground()
     }

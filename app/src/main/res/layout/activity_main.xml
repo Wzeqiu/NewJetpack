@@ -32,35 +32,13 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:text="打开引导页示例" />
+    <Button
+        android:id="@+id/btn_shape_demo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="shapeDemo" />
 
-    <com.wzeqiu.newjetpack.view.ShapeTextView
-        android:layout_width="wrap_content"
-        android:text="这是测试TextView"
-        android:layout_height="wrap_content"/>
-    <androidx.appcompat.widget.AppCompatTextView
-        android:layout_width="wrap_content"
-        android:text="这是测试TextView"
-        android:layout_height="wrap_content"/>
-    <androidx.appcompat.widget.AppCompatAutoCompleteTextView
-        android:layout_width="wrap_content"
-        android:text="这是测试TextView"
-        android:hint="这是测试TextView"
-        android:layout_height="wrap_content"/>
-    <EditText
-        android:layout_width="wrap_content"
-        android:text="这是测试TextView"
-        android:hint="这是测试TextView"
-        android:layout_height="wrap_content"/>
-    <androidx.appcompat.widget.AppCompatEditText
-        android:layout_width="wrap_content"
-        android:text="这是测试TextView"
-        android:hint="这是测试TextView"
-        android:layout_height="wrap_content"/>
-    <androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView
-        android:layout_width="wrap_content"
-        android:text="这是测试TextView"
-        android:hint="这是测试TextView"
-        android:layout_height="wrap_content"/>
 
 
 </LinearLayout>
