@@ -1,4 +1,4 @@
-package com.mxm.douying.widget.guide
+package com.wzeqiu.newjetpack.widget.guide
 
 import android.content.Context
 import android.graphics.Canvas
@@ -32,6 +32,14 @@ class GuideOverlayView @JvmOverloads constructor(
     private var holeRadius = 0f
     private var defaultRadius = 20f
 
+    private val paintFrame by lazy {
+        Paint().apply {
+            setColor(Color.parseColor("#2c3033"))
+//            strokeWidth = 2.dp().toFloat()
+            style = Paint.Style.STROKE
+        }
+    }
+
     @ColorInt
     private var overlayColor = Color.parseColor("#B2000000")
 
@@ -43,22 +51,24 @@ class GuideOverlayView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         // 需要离屏缓冲才能正确处理透明区域
         val layer = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
-
         // 绘制整个背景
         paint.color = overlayColor
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
-
         // 剪切穿透区域
         clipPath.reset()
         for (rect in holeRects) {
             val radius = if (holeRadius > 0) holeRadius else defaultRadius
             clipPath.addRoundRect(rect, radius, radius, Path.Direction.CW)
         }
-
         // 将穿透区域设置为透明
         canvas.drawPath(clipPath, transparentPaint)
-
         canvas.restoreToCount(layer)
+
+        val radius = if (holeRadius > 0) holeRadius else defaultRadius
+        for (rect in holeRects) {
+            canvas.drawRoundRect(rect, radius, radius, paintFrame)
+        }
+
     }
 
     /**
@@ -99,9 +109,9 @@ class GuideOverlayView @JvmOverloads constructor(
         // 计算相对位置
         val rect = RectF(
             (location[0] - selfLocation[0] - padding.left + margin.left).toFloat(),
-            (location[1] - selfLocation[1] - padding.top+margin.top).toFloat(),
-            (location[0] - selfLocation[0] + targetView.width + padding.right- margin.right).toFloat(),
-            (location[1] - selfLocation[1] + targetView.height + padding.bottom- margin.bottom).toFloat()
+            (location[1] - selfLocation[1] - padding.top + margin.top).toFloat(),
+            (location[0] - selfLocation[0] + targetView.width + padding.right - margin.right).toFloat(),
+            (location[1] - selfLocation[1] + targetView.height + padding.bottom - margin.bottom).toFloat()
         )
 
         setHoleRect(rect, radius)

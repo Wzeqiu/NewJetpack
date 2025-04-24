@@ -1,11 +1,11 @@
-package com.mxm.douying.widget.guide
+package com.wzeqiu.newjetpack.widget.guide
 
 import android.app.Activity
 import android.graphics.RectF
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.mxm.douying.R
+import com.wzeqiu.newjetpack.R
 
 /**
  * 引导页控制器，用于管理引导页的显示和交互
