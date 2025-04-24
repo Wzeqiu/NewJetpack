@@ -46,6 +46,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         binding.btnShapeDemo.singleClick {
             startActivity(Intent(this@MainActivity, ShapeDemoActivity::class.java))
         }
+        // 添加按钮点击事件TablayoutDemo
+        binding.btnTablayoutDemo.singleClick {
+            startActivity(Intent(this@MainActivity, TabLayoutDemoActivity::class.java))
+        }
     }
 
 

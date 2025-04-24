@@ -29,6 +29,9 @@
         <activity
             android:name=".ShapeDemoActivity"
             android:exported="false" />
+        <activity
+            android:name=".TabLayoutDemoActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

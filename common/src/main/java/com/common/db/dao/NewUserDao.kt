@@ -1,7 +1,6 @@
 package com.common.db.dao
 
 import com.common.db.BaseDB
-import com.common.db.NewUser_
 
 /**
  * NewUser 表的数据访问对象 (DAO)
