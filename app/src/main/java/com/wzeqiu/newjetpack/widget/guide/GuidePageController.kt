@@ -1,14 +1,11 @@
-package com.wzeqiu.newjetpack.widget.guide
+package com.mxm.douying.widget.guide
 
 import android.app.Activity
-import android.graphics.Color
 import android.graphics.RectF
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.TextView
-import com.wzeqiu.newjetpack.R
+import com.mxm.douying.R
 
 /**
  * 引导页控制器，用于管理引导页的显示和交互
@@ -108,10 +105,11 @@ class GuidePageController(private val activity: Activity) {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
-                setOnClickListener {
-                    // 点击遮罩层进入下一步
-                    nextStep()
-                }
+//                setOnClickListener {
+//                    // 点击遮罩层进入下一步
+//                    nextStep()
+//                }
+                isClickable=true
             }
             rootView?.addView(overlayView)
 
@@ -121,6 +119,7 @@ class GuidePageController(private val activity: Activity) {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
+                isClickable=true
             }
             rootView?.addView(contentContainer)
         }
@@ -132,7 +131,7 @@ class GuidePageController(private val activity: Activity) {
         // 更新遮罩层的穿透区域
         val targetRect = RectF()
         step.targetView?.let {
-            overlayView?.setHoleForView(it, step.padding, step.cornerRadius)
+            overlayView?.setHoleForView(it, step.padding,step.margin, step.cornerRadius)
             
             // 计算目标视图在屏幕上的位置和大小，供自定义视图使用
             val location = IntArray(2)
@@ -141,10 +140,10 @@ class GuidePageController(private val activity: Activity) {
             overlayView?.getLocationOnScreen(selfLocation)
             
             targetRect.set(
-                (location[0] - selfLocation[0] - step.padding).toFloat(),
-                (location[1] - selfLocation[1] - step.padding).toFloat(),
-                (location[0] - selfLocation[0] + it.width + step.padding).toFloat(),
-                (location[1] - selfLocation[1] + it.height + step.padding).toFloat()
+                (location[0] - selfLocation[0] - step.padding.left + step.margin.left).toFloat(),
+                (location[1] - selfLocation[1] - step.padding.top+step.margin.top).toFloat(),
+                (location[0] - selfLocation[0] + it.width + step.padding.right- step.margin.right).toFloat(),
+                (location[1] - selfLocation[1] + it.height + step.padding.bottom- step.margin.bottom).toFloat()
             )
         } ?: run {
             step.targetRect?.let {
@@ -181,9 +180,9 @@ class GuidePageController(private val activity: Activity) {
     data class GuideStep(
         val targetView: View? = null, // 目标视图
         val targetRect: RectF? = null, // 或者直接指定目标区域
-        val content: String? = null, // 引导内容文本
         val customContentView: View? = null, // 自定义内容视图
-        val padding: Float = 0f, // 穿透区域扩展的内边距
+        val padding: RectF = RectF(), // 穿透区域扩展的内边距
+        val margin: RectF = RectF(), // 穿透区域扩展的外边距
         val cornerRadius: Float = 20f // 穿透区域圆角半径
     )
 } 
