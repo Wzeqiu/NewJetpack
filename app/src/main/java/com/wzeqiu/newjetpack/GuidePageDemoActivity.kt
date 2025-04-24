@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.wzeqiu.newjetpack.widget.guide.GuideContentView
-import com.wzeqiu.newjetpack.widget.guide.GuidePageController
+import com.common.widget.guide.DemoGuideContentView
+import com.common.widget.guide.GuidePageController
 
 /**
  * 引导页演示活动
@@ -63,7 +63,6 @@ class GuidePageDemoActivity : AppCompatActivity() {
                 GuidePageController.GuideStep(
                     targetView = button1,
                     customContentView = customContentView1,
-                    padding = 10f,
                     cornerRadius = 30f
                 ),
                 
@@ -71,7 +70,6 @@ class GuidePageDemoActivity : AppCompatActivity() {
                 GuidePageController.GuideStep(
                     targetView = button2,
                     customContentView = customContentView2,
-                    padding = 10f,
                     cornerRadius = 30f
                 ),
                 
@@ -79,7 +77,6 @@ class GuidePageDemoActivity : AppCompatActivity() {
                 GuidePageController.GuideStep(
                     targetView = button3,
                     customContentView = customContentView3,
-                    padding = 10f,
                     cornerRadius = 30f
                 )
             )
@@ -92,8 +89,8 @@ class GuidePageDemoActivity : AppCompatActivity() {
     /**
      * 创建自定义内容视图
      */
-    private fun createCustomContentView(title: String,): GuideContentView {
-        return GuideContentView(this).apply {
+    private fun createCustomContentView(title: String,): DemoGuideContentView {
+        return DemoGuideContentView(this).apply {
             setTitle(title)
             setOnNextClickListener {
                 guideController.nextStep()

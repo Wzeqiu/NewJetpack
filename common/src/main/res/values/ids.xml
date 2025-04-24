@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-     <item name="view_check_interval_id" type="id"/>
+    <!-- 点击事件延迟 -->
+    <item name="view_check_interval_id" type="id" />
+    <!-- 引导页相关IDs -->
+    <item name="guide_target_rect" type="id" />
 </resources>

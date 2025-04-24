@@ -1,4 +1,4 @@
-package com.wzeqiu.newjetpack.widget.guide
+package com.common.widget.guide
 
 import android.content.Context
 import android.graphics.Canvas

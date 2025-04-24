@@ -1,4 +1,4 @@
-package com.common
+package com.common.ui
 
 import android.app.Dialog
 import android.graphics.Color

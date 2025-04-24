@@ -1,11 +1,11 @@
-package com.wzeqiu.newjetpack.widget.guide
+package com.common.widget.guide
 
 import android.app.Activity
 import android.graphics.RectF
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.wzeqiu.newjetpack.R
+import com.common.common.R
 
 /**
  * 引导页控制器，用于管理引导页的显示和交互
@@ -105,10 +105,10 @@ class GuidePageController(private val activity: Activity) {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
-//                setOnClickListener {
-//                    // 点击遮罩层进入下一步
-//                    nextStep()
-//                }
+                setOnClickListener {
+                    // 点击遮罩层进入下一步
+                    nextStep()
+                }
                 isClickable=true
             }
             rootView?.addView(overlayView)
