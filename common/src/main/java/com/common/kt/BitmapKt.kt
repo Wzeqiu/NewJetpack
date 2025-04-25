@@ -32,6 +32,9 @@ private const val maxImageWidth = 1080
 private const val maxImageHeight = 1080
 
 
+/**
+ * 压缩图片
+ */
 suspend fun getCompressImagePath(path: String): String? {
     return suspendCancellableCoroutine {
         val degree = ImageUtils.getRotateDegree(path)
@@ -56,7 +59,9 @@ suspend fun getCompressImagePath(path: String): String? {
         }
     }
 }
-
+/**
+ * 压缩图片
+ */
 suspend fun getCompressImageBitmap(path: String): Pair<String, Bitmap>? {
     return suspendCancellableCoroutine {
         val degree = ImageUtils.getRotateDegree(path)
@@ -112,7 +117,9 @@ suspend fun checkImageFace(path: String, block: (Boolean, String) -> Unit) {
     } ?: block(false, "")
 }
 
-
+/**
+ * 保存到相册
+ */
 fun AppCompatActivity.saveToAlbum(path: String) {
     requestPermission(MANAGE_EXTERNAL_STORAGE) {
         saveVideoToGallery(path)
