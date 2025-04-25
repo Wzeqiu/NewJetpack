@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>WebView JavaScript Interaction</title>
+</head>
+
+<body>
+<button onclick="openAndroidActivity()">Open Android Activity via JS</button>
+<a href="test://example">Open Android Activity via Scheme</a>
+<script>
+    function openAndroidActivity() {
+        Android.openActivity();
+    }
+</script>
+</body>
+
+</html>

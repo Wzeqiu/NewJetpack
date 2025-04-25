@@ -10,16 +10,14 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
 
-    <application android:requestLegacyExternalStorage="true">
-        <activity
-            android:name="com.common.ui.media.MediaManageActivity"
-            android:screenOrientation="portrait" />
-    </application>
     <application
         android:networkSecurityConfig="@xml/network_security_config"
         android:requestLegacyExternalStorage="true" >
         <activity
-            android:name="com.common.activity.MediaSelectionActivity"
+            android:name="com.common.ui.media.MediaManageActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.common.ui.webView.WebViewActivity"
             android:exported="false" />
     </application>
 </manifest>

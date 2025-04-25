@@ -8,6 +8,7 @@ import com.common.kt.singleClick
 import com.common.ui.BaseActivity
 import com.common.ui.media.MediaInfo
 import com.common.ui.media.MediaManageActivity
+import com.common.ui.webView.WebViewActivity
 import com.wzeqiu.newjetpack.databinding.ActivityMainBinding
 
 
@@ -49,6 +50,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         // 添加按钮点击事件TablayoutDemo
         binding.btnTablayoutDemo.singleClick {
             startActivity(Intent(this@MainActivity, TabLayoutDemoActivity::class.java))
+        }
+        // 添加按钮点击事件TablayoutDemo
+        binding.btnWebViewDemo.singleClick {
+            startActivity(Intent(this@MainActivity, WebViewActivity::class.java))
         }
     }
 
