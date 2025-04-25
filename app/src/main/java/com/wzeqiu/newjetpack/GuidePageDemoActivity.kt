@@ -1,5 +1,6 @@
 package com.wzeqiu.newjetpack
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
@@ -35,6 +36,9 @@ class GuidePageDemoActivity : AppCompatActivity() {
         
         // 设置引导结束监听器
         guideController.setOnFinishListener {
+
+            setResult(RESULT_OK, Intent().putExtra("data","11111111111"))
+            finish()
             Toast.makeText(this, "引导结束", Toast.LENGTH_SHORT).show()
         }
     }

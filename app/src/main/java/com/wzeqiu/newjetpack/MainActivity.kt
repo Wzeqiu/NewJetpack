@@ -2,6 +2,7 @@ package com.wzeqiu.newjetpack
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import androidx.activity.result.contract.ActivityResultContracts
 import com.common.kt.singleClick
@@ -9,6 +10,7 @@ import com.common.ui.BaseActivity
 import com.common.ui.media.MediaInfo
 import com.common.ui.media.MediaManageActivity
 import com.common.ui.webView.WebViewActivity
+import com.common.kt.activity.launch
 import com.wzeqiu.newjetpack.databinding.ActivityMainBinding
 
 
@@ -38,10 +40,14 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 //            anim.spring = spring
 //            anim.start()
         }
-        
+
         // 添加按钮点击事件，打开引导页示例
         binding.btnGuideDemo.singleClick {
-            startActivity(Intent(this@MainActivity, GuidePageDemoActivity::class.java))
+            launch<GuidePageDemoActivity> {
+                if (it.resultCode == RESULT_OK) {
+                    Log.e("AAAA", "DATA===${it.data?.getStringExtra("data")}")
+                }
+            }
         }
         // 添加按钮点击事件ShapeDemo
         binding.btnShapeDemo.singleClick {
@@ -53,6 +59,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
         // 添加按钮点击事件TablayoutDemo
         binding.btnWebViewDemo.singleClick {
+
             startActivity(Intent(this@MainActivity, WebViewActivity::class.java))
         }
     }

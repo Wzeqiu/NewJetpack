@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.Gravity
 import android.widget.TextView
 import com.common.ui.BaseActivity
-import com.common.utils.setupWithViewPager
+import com.common.widget.tab.setupWithViewPager
 import com.google.android.material.tabs.TabLayout
 import com.wzeqiu.newjetpack.databinding.ActivityTabLayoutDemoBinding
 

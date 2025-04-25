@@ -1,4 +1,4 @@
-package com.common.utils
+package com.common.kt.activity
 
 import android.content.Intent
 import androidx.activity.result.ActivityResult
@@ -7,7 +7,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 用于在非Activity类中启动Activity并接收结果的工具类
@@ -17,12 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger
  * 3. 在callback中处理返回结果
  */
 class ActivityLauncher(private val activity: FragmentActivity) : DefaultLifecycleObserver {
-    companion object {
-        /**
-         * 自动计数防止code 冲突
-         */
-        private val mNextLocalRequestCode: AtomicInteger by lazy { AtomicInteger() }
-    }
 
     // ActivityResultLauncher用于启动Activity并接收结果
     private var launcher: ActivityResultLauncher<Intent>? = null
@@ -71,4 +64,6 @@ class ActivityLauncher(private val activity: FragmentActivity) : DefaultLifecycl
         launcher = null
         activity.lifecycle.removeObserver(this)
     }
-} 
+}
+
+
