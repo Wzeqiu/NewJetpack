@@ -2,6 +2,59 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- 位置权限 -->
+    <!-- 建议使用粗略位置权限。如果应用核心功能确实需要精确位置，
+         请添加 android.permission.ACCESS_FINE_LOCATION，并在应用中向用户清晰解释原因。 -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> -->
+
+    <!--
+        通讯录权限 (READ_CONTACTS):
+        金融类App应避免直接请求此权限。
+        替代方案: 使用 Intent.ACTION_PICK 和 ContactsContract 让用户主动从通讯录中选择联系人。
+        这样通常不需要 READ_CONTACTS 权限即可获取用户选择的联系人基本信息。
+        如果需要访问选中联系人的详细信息，可能仍需此权限，但应在用户明确操作后按需请求。
+        (示例，如果需要，取消注释并确保在代码中正确处理运行时权限请求)
+        <uses-permission android:name="android.permission.READ_CONTACTS" />
+    -->
+
+    <!--
+        文件访问权限:
+        避免使用 READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE (Android 10+), MANAGE_EXTERNAL_STORAGE.
+        替代方案:
+        1. 照片/视频选择: 使用 Android 照片选择器 (Photo Picker)。
+           - Android 13+: 系统提供。
+           - Android 11/12 (部分设备) 及通过 Jetpack Activity 库 (1.7.0+) 或 Fragment 库 (1.6.0+) 向下兼容。
+           - 不需要 READ_MEDIA_IMAGES 或 READ_MEDIA_VIDEO 权限来访问用户选择的媒体。
+        2. 通用文件选择: 使用 Storage Access Framework (SAF) - Intent.ACTION_OPEN_DOCUMENT, Intent.ACTION_CREATE_DOCUMENT.
+           - 不需要直接的文件系统权限。
+        3. 应用专属存储: 应用可以自由读写其内部存储和外部存储的应用专属目录，无需权限。
+        4. MediaStore API: 用于访问共享媒体集合 (图片、视频、音频文件)。
+           - 读取: READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, READ_MEDIA_AUDIO (根据需要声明).
+           - 写入 (Android 10+): 通常不需要 WRITE_EXTERNAL_STORAGE 即可向公共媒体集合添加文件。
+           - 写入 (Android 9 及以下): 需要 WRITE_EXTERNAL_STORAGE.
+        (以下权限通常不应由金融类App申请，除非有极特殊且合规的理由)
+        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+        <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    -->
+
+    <!--
+        查询已安装应用列表 (QUERY_ALL_PACKAGES):
+        此权限受到严格限制，金融类App通常不符合获取此权限的条件。
+        替代方案: 如果需要与特定应用交互 (例如，检查某个已知的第三方支付App是否安装以提供支付选项)，
+        可以在 <queries> 标签中声明该应用的包名或它们能响应的Intent Filter。
+        例如:
+        <queries>
+            <package android:name="com.example.paymentapp" />
+            <intent>
+                <action android:name="android.intent.action.VIEW" />
+                <data android:scheme="customscheme" />
+            </intent>
+        </queries>
+        这样可以在不获取所有应用列表的情况下，检查特定应用或能处理特定Intent的应用是否存在。
+    -->
+
     <application
         android:name=".NewApplication"
         android:allowBackup="true"
