@@ -51,40 +51,6 @@
         android:layout_margin="16dp"
         android:text="WebView" />
 
-    <Button
-        android:id="@+id/btn_pick_contact"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:text="选择联系人 (隐私友好)" />
 
-    <Button
-        android:id="@+id/btn_pick_image"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:text="选择图片 (照片选择器)" />
-
-    <Button
-        android:id="@+id/btn_pick_document"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:text="选择文档 (SAF)" />
-
-    <Button
-        android:id="@+id/btn_request_location"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:text="请求粗略位置权限" />
 
 </LinearLayout>

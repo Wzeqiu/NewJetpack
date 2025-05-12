@@ -1,4 +1,4 @@
-package com.example.newjetpack.utils
+package com.wzeqiu.permission
 
 import android.Manifest
 import android.app.Activity
