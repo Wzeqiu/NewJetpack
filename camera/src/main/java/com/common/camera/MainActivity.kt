@@ -14,7 +14,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
-import com.common.kt.requestPermission
+import com.common.kt.activity.requestPermission
 import com.wzeqiu.camera.R
 import java.io.File
 
