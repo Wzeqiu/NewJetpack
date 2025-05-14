@@ -20,6 +20,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        binding.countdownView.setTime(864000)
 
         binding.textView.singleClick {
             val spring = SpringForce(360f)
