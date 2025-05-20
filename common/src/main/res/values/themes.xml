@@ -14,4 +14,11 @@
         <!-- 设置窗口为半透明 -->
         <item name="android:windowIsTranslucent">true</item>
     </style>
+
+
+    <declare-styleable name="CountdownView">
+        <attr name="countdown_textColor" format="color" />
+        <attr name="countdown_segmentColor" format="color" />
+        <attr name="countdown_separatorColor" format="color" />
+    </declare-styleable>
 </resources>

@@ -1,4 +1,4 @@
-package com.common.widget
+package com.common.widget.view
 
 import android.content.Context
 import android.graphics.Canvas

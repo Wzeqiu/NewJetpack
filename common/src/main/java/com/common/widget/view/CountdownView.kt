@@ -1,4 +1,4 @@
-package com.wzeqiu.newjetpack.view
+package com.common.widget.view
 
 import android.content.Context
 import android.graphics.Canvas
@@ -8,7 +8,7 @@ import android.graphics.RectF
 import android.os.CountDownTimer
 import android.util.AttributeSet
 import android.view.View
-import com.wzeqiu.newjetpack.R
+import com.common.common.R
 import java.util.concurrent.TimeUnit
 
 /**

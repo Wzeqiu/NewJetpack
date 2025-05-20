@@ -44,10 +44,6 @@
         </attr>
     </declare-styleable>
 
-    <declare-styleable name="CountdownView">
-        <attr name="countdown_textColor" format="color" />
-        <attr name="countdown_segmentColor" format="color" />
-        <attr name="countdown_separatorColor" format="color" />
-    </declare-styleable>
+
     
 </resources>
