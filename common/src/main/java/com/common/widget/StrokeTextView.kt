@@ -1,4 +1,4 @@
-package com.wzeqiu.newjetpack.view
+package com.common.widget
 
 import android.content.Context
 import android.graphics.Canvas
