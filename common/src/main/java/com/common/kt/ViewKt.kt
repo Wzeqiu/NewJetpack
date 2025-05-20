@@ -1,5 +1,6 @@
 package com.common.kt
 
+import android.annotation.SuppressLint
 import android.view.View
 import com.common.common.R
 
@@ -26,4 +27,24 @@ inline fun View.checkSingleClick(interval: Long = 500, crossinline action: View.
     if (currentTime - lastClickTime < interval) return
     setTag(R.id.view_check_interval_id, currentTime)
     action(this)
+}
+
+/**
+ * 为View添加触摸缩放动画
+ * 当手指按下时缩小，手指抬起或取消时放大
+ */
+@SuppressLint("ClickableViewAccessibility")
+fun View.addTouchScaleAnimation(scale: Float = 0.9f, duration: Long = 100): View {
+    setOnTouchListener { _, event ->
+        when (event.action) {
+            android.view.MotionEvent.ACTION_DOWN -> animate().scaleX(scale).scaleY(scale)
+                .setDuration(duration).start()
+
+            android.view.MotionEvent.ACTION_UP,
+            android.view.MotionEvent.ACTION_CANCEL -> animate().scaleX(1.0f).scaleY(1.0f)
+                .setDuration(duration).start()
+        }
+        false
+    }
+    return this
 }

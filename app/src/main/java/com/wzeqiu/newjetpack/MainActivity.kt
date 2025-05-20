@@ -7,6 +7,7 @@ import androidx.dynamicanimation.animation.DynamicAnimation
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import com.common.kt.activity.launch
+import com.common.kt.addTouchScaleAnimation
 import com.common.kt.singleClick
 import com.common.ui.BaseActivity
 import com.common.ui.webView.WebViewActivity
@@ -15,14 +16,12 @@ import com.wzeqiu.newjetpack.databinding.ActivityMainBinding
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding.countdownView.setTime(864000)
 
-        binding.textView.singleClick {
+        binding.textView.addTouchScaleAnimation().singleClick {
             val spring = SpringForce(360f)
                 .setDampingRatio(SpringForce.DAMPING_RATIO_HIGH_BOUNCY)
                 .setStiffness(SpringForce.STIFFNESS_VERY_LOW)
@@ -55,7 +54,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
 
     }
-
 
 
 //    fun modifyChannelColor(srcBitmap: Bitmap, color: Int): Bitmap {
