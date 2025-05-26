@@ -136,7 +136,7 @@ class CountdownView @JvmOverloads constructor(
      */
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        // 简单计算，实际项目中可能需要更复杂的计算
+        // 简单计算
         val textHeight = textPaint.fontMetrics.bottom - textPaint.fontMetrics.top
         segmentHeight = textHeight + 2 * dpToPx(segmentPadding)
         // 假设每个数字块宽度一致，以"00"为基准
