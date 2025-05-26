@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.Choreographer
 import com.common.common.R
@@ -48,6 +49,8 @@ class CountdownView @JvmOverloads constructor(
     private var totalMillis: Long = 0
     private var startTime: Long = 0L
 
+    private var finishListener: FinishListener? = null
+
     private val frameCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
             val elapsedMillis = System.currentTimeMillis() - startTime
@@ -55,9 +58,9 @@ class CountdownView @JvmOverloads constructor(
             updateDisplayTime(remainingMillis)
 
             if (remainingMillis > 0) {
-                Choreographer.getInstance().postFrameCallback (this)
+                Choreographer.getInstance().postFrameCallback(this)
             } else {
-                // 倒计时结束逻辑
+                finishListener?.finish()
             }
         }
     }
@@ -66,7 +69,8 @@ class CountdownView @JvmOverloads constructor(
         // 从XML属性初始化
         attrs?.let {
             val typedArray = context.obtainStyledAttributes(it, R.styleable.CountdownView, 0, 0)
-            textColor = typedArray.getColor(R.styleable.CountdownView_countdown_textColor, Color.WHITE)
+            textColor =
+                typedArray.getColor(R.styleable.CountdownView_countdown_textColor, Color.WHITE)
             segmentColor = typedArray.getColor(
                 R.styleable.CountdownView_countdown_segmentColor,
                 Color.parseColor("#FF5722")
@@ -112,6 +116,11 @@ class CountdownView @JvmOverloads constructor(
         Choreographer.getInstance().postFrameCallback(frameCallback)
     }
 
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        stop()
+    }
+
     /**
      * 停止倒计时
      */
@@ -142,7 +151,8 @@ class CountdownView @JvmOverloads constructor(
         // 假设每个数字块宽度一致，以"00"为基准
         segmentWidth = textPaint.measureText("00") + 2 * dpToPx(segmentPadding)
 
-        val desiredWidth = (segmentWidth * 4) + (separatorWidth * 3) + (dpToPx(segmentPadding) * 6) // 4个数字块，3个分隔符，左右padding
+        val desiredWidth =
+            (segmentWidth * 4) + (separatorWidth * 3) + (dpToPx(segmentPadding) * 6) // 4个数字块，3个分隔符，左右padding
         val desiredHeight = segmentHeight
 
         setMeasuredDimension(
@@ -221,5 +231,15 @@ class CountdownView @JvmOverloads constructor(
     // 工具方法：sp转px
     private fun spToPx(sp: Float): Float {
         return sp * resources.displayMetrics.scaledDensity
+    }
+
+
+    fun setOnFinishListener(listener: FinishListener) {
+        this.finishListener = listener
+    }
+
+
+    interface FinishListener {
+        fun finish()
     }
 }
