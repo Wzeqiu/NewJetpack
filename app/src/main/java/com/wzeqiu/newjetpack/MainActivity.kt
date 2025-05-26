@@ -8,6 +8,7 @@ import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import com.common.kt.activity.launch
 import com.common.kt.addTouchScaleAnimation
+import com.common.kt.loadScaled
 import com.common.kt.singleClick
 import com.common.ui.BaseActivity
 import com.common.ui.webView.WebViewActivity
@@ -18,6 +19,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding.ivImageView.post {
+            binding.ivImageView.loadScaled("https://cdn.idouying.cn/douyin/material_background/png/20250507/202505071104028e3bf8676.jpg", targetWidth = binding.ivImageView.measuredWidth)
+        }
+
 
         binding.countdownView.setTime(864000)
 

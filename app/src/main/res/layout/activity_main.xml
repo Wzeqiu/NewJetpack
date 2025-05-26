@@ -20,6 +20,10 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
     <ImageView
+        android:id="@+id/ivImageView"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"/>
+    <ImageView
         android:id="@+id/iv"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -40,25 +44,21 @@
         android:id="@+id/btn_guide_demo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:text="打开引导页示例" />
     <Button
         android:id="@+id/btn_shape_demo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:text="shapeDemo" />
     <Button
         android:id="@+id/btn_tablayout_demo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:text="TabLayout" />
     <Button
         android:id="@+id/btn_webView_demo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:text="WebView" />
 
 
