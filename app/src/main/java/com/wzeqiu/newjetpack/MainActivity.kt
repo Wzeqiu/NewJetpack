@@ -24,7 +24,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
 
 
-        binding.countdownView.setTime(864000)
+        binding.countdownView.setTime(8640000)
 
         binding.textView.addTouchScaleAnimation().singleClick {
             val spring = SpringForce(360f)

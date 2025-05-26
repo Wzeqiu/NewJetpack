@@ -5,9 +5,9 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
-import android.os.CountDownTimer
 import android.util.AttributeSet
 import android.view.View
+import android.view.Choreographer
 import com.common.common.R
 import java.util.concurrent.TimeUnit
 
@@ -34,9 +34,9 @@ class CountdownView @JvmOverloads constructor(
     // 控件尺寸相关
     private var segmentWidth: Float = 0f
     private var segmentHeight: Float = 0f
-    private val segmentPadding: Float = 10f // dp
-    private val cornerRadius: Float = 20f // dp
-    private val textSize: Float = 40f // sp
+    private val segmentPadding: Float = 5f // dp
+    private val cornerRadius: Float = 5f // dp
+    private val textSize: Float = 20f // sp
     private val separatorText: String = ":"
     private var separatorWidth: Float = 0f
 
@@ -45,16 +45,34 @@ class CountdownView @JvmOverloads constructor(
     private var segmentColor = Color.parseColor("#FF5722") // 示例红色
     private var separatorColor = Color.WHITE
 
-    private var countDownTimer: CountDownTimer? = null
     private var totalMillis: Long = 0
+    private var startTime: Long = 0L
+
+    private val frameCallback = object : Choreographer.FrameCallback {
+        override fun doFrame(frameTimeNanos: Long) {
+            val elapsedMillis = System.currentTimeMillis() - startTime
+            val remainingMillis = (totalMillis - elapsedMillis).coerceAtLeast(0)
+            updateDisplayTime(remainingMillis)
+
+            if (remainingMillis > 0) {
+                Choreographer.getInstance().postFrameCallback (this)
+            } else {
+                // 倒计时结束逻辑
+            }
+        }
+    }
 
     init {
         // 从XML属性初始化
         attrs?.let {
             val typedArray = context.obtainStyledAttributes(it, R.styleable.CountdownView, 0, 0)
             textColor = typedArray.getColor(R.styleable.CountdownView_countdown_textColor, Color.WHITE)
-            segmentColor = typedArray.getColor(R.styleable.CountdownView_countdown_segmentColor, Color.parseColor("#FF5722"))
-            separatorColor = typedArray.getColor(R.styleable.CountdownView_countdown_separatorColor, Color.WHITE)
+            segmentColor = typedArray.getColor(
+                R.styleable.CountdownView_countdown_segmentColor,
+                Color.parseColor("#FF5722")
+            )
+            separatorColor =
+                typedArray.getColor(R.styleable.CountdownView_countdown_separatorColor, Color.BLUE)
             // TypedArray使用后需要回收
             typedArray.recycle()
         }
@@ -80,6 +98,7 @@ class CountdownView @JvmOverloads constructor(
     fun setTime(millis: Long) {
         this.totalMillis = millis
         updateDisplayTime(millis)
+        // 不在这里启动，等待start调用
         start()
     }
 
@@ -88,25 +107,16 @@ class CountdownView @JvmOverloads constructor(
      */
     fun start() {
         if (totalMillis <= 0) return
-
-        countDownTimer?.cancel()
-        countDownTimer = object : CountDownTimer(totalMillis, 10) { // 每10毫秒更新一次
-            override fun onTick(millisUntilFinished: Long) {
-                updateDisplayTime(millisUntilFinished)
-            }
-
-            override fun onFinish() {
-                updateDisplayTime(0)
-                // 可以在这里添加倒计时结束的逻辑
-            }
-        }.start()
+        stop() // 先停止之前的回调
+        startTime = System.currentTimeMillis()
+        Choreographer.getInstance().postFrameCallback(frameCallback)
     }
 
     /**
      * 停止倒计时
      */
     fun stop() {
-        countDownTimer?.cancel()
+        Choreographer.getInstance().removeFrameCallback(frameCallback)
     }
 
     /**
@@ -146,9 +156,8 @@ class CountdownView @JvmOverloads constructor(
      */
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-
         val textY = height / 2f - (textPaint.descent() + textPaint.ascent()) / 2f
-        var currentX = dpToPx(segmentPadding) // 起始X坐标
+        var currentX = 0f// 起始X坐标
 
         // 绘制小时
         drawSegment(canvas, formatTime(hours), currentX, textY)

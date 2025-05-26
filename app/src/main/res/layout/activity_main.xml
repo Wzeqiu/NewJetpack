@@ -12,10 +12,9 @@
         android:id="@+id/countdownView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         app:countdown_segmentColor="#E91E63"
         app:countdown_textColor="@android:color/white"
-        app:countdown_separatorColor="@android:color/white"
+        app:countdown_separatorColor="@android:color/black"
         app:layout_constraintTop_toBottomOf="@+id/button3"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
