@@ -17,7 +17,7 @@ object TaskType {
      * 任务状态定义
      */
     const val TASK_STATUS_DELETE = -1  // 已删除
-    const val TASK_STATUS_CREATE = 0   // 创建中
+    const val TASK_STATUS_CREATE = 0   // 创建
     const val TASK_STATUS_SUCCESS = 1  // 成功
     const val TASK_STATUS_FAILURE = 2  // 失败
     

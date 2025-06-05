@@ -34,19 +34,15 @@ object FileDownloadHelper {
      *
      * @param url 文件URL
      * @param targetFile 目标文件
-     * @param onProgress 进度回调
      * @return 下载结果
      */
     suspend fun downloadFile(
         url: String,
-        targetFile: File,
-        onProgress: ((progress: Int) -> Unit)? = null
+        targetFile: File
     ): Result<File> {
         return NetworkHelper.executeWithRetry {
             suspendCancellableCoroutine { continuation ->
                 Log.d(TAG, "开始下载文件: $url -> ${targetFile.absolutePath}")
-                onProgress?.invoke(0)
-
 
                 continuation.invokeOnCancellation {
                     Log.d(TAG, "下载已取消: $url")

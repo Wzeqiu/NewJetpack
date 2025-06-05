@@ -5,27 +5,31 @@
 新版任务管理框架采用了更加模块化和可扩展的设计，主要包含以下核心组件：
 
 1. **TaskManager**：单例核心管理器，负责任务的创建、执行、状态更新和删除等操作
-2. **TaskExecutor**：任务执行器抽象类，定义了任务执行的通用接口
-3. **TaskListener**：任务状态和进度监听接口
-4. **TaskLifecycleListener**：任务生命周期监听接口
+2. **ExecutorRegistry**：执行器注册表，支持动态注册和管理任务执行器
+3. **TaskExecutor**：任务执行器抽象类，定义了任务执行的通用接口
+4. **ListenerManager**：监听器管理器，提供高效的事件通知机制
+5. **RetryHelper**：重试辅助类，提供指数退避策略的重试机制
 
 ### 目录结构
 
 根据功能类型进行了分包，使架构更加清晰：
 
 ```
-com.mxm.douying.aigc.taskmanager/
+com.common.taskmanager/
 ├── core/                       # 核心类和接口
 │   ├── TaskType.kt             # 任务类型和状态定义
 │   ├── TaskExtensions.kt       # 任务扩展函数
 │   ├── TaskManager.kt          # 任务管理器
 │   └── TaskManagerExtensions.kt # 任务管理器扩展函数
 ├── listener/                   # 监听器相关
-│   └── TaskListener.kt         # 任务监听器接口
+│   ├── TaskListener.kt         # 任务监听器接口
+│   └── ListenerManager.kt      # 监听器管理器
 ├── helper/                     # 辅助工具类
 │   ├── NetworkHelper.kt        # 网络操作辅助类
-│   └── FileDownloadHelper.kt   # 文件下载辅助类
+│   ├── FileDownloadHelper.kt   # 文件下载辅助类
+│   └── RetryHelper.kt          # 重试机制辅助类
 ├── executor/                   # 执行器实现
+│   ├── ExecutorRegistry.kt     # 执行器注册表
 │   ├── TaskExecutor.kt         # 任务执行器抽象类
 │   ├── TextToImageExecutor.kt  # 文生图任务执行器
 │   ├── VideoTaskExecutor.kt    # 视频类任务基础执行器
@@ -38,10 +42,12 @@ com.mxm.douying.aigc.taskmanager/
 
 1. **统一的任务管理**：通过`TaskManager`统一管理所有类型的AI任务
 2. **模块化设计**：每种任务类型有专门的执行器，便于扩展
-3. **健壮的错误处理**：内置重试机制和异常捕获
+3. **健壮的错误处理**：内置指数退避重试机制和异常捕获
 4. **线程安全**：使用协程和互斥锁保证线程安全
-5. **进度回调**：支持任务进度实时更新
-6. **低内存占用**：优化内存使用，避免泄漏
+5. **低内存占用**：优化内存使用，避免泄漏
+6. **按类型监听**：支持按任务类型过滤的监听机制
+7. **动态注册执行器**：允许在运行时注册和管理执行器
+8. **灵活的监听器**：提供可选实现的监听器接口，按需覆盖感兴趣的事件
 
 ## 使用方法
 
@@ -75,13 +81,15 @@ val task = AITaskInfo().apply {
 TaskManager.getInstance().addTask(task)
 ```
 
-### 监听任务状态
+### 监听任务事件
 
 ```kotlin
-// 监听任务状态变化
+// 创建监听器，只覆盖感兴趣的事件
 import com.common.taskmanager.listener.TaskListener
 
-TaskManager.getInstance().addTaskStatusListener(object : TaskListener {
+TaskManager.getInstance().addTaskListener(object : TaskListener {
+    // 所有方法都是可选实现的，只需覆盖你关心的事件
+
     override fun onTaskStatusChanged(task: AITaskInfo) {
         // 处理任务状态变化
         when (task.status) {
@@ -94,24 +102,21 @@ TaskManager.getInstance().addTaskStatusListener(object : TaskListener {
         }
     }
     
-    override fun onTaskProgressUpdated(task: AITaskInfo, progress: Int) {
-        // 更新进度条等UI
-        progressBar.progress = progress
-    }
-})
-
-// 监听任务生命周期
-import com.common.taskmanager.listener.TaskLifecycleListener
-
-TaskManager.getInstance().addTaskLifecycleListener(object : TaskLifecycleListener {
     override fun onTaskAdded(task: AITaskInfo) {
-        // 任务添加
+        // 处理任务添加事件
     }
     
     override fun onTaskRemoved(tasks: List<AITaskInfo>) {
-        // 任务删除
+        // 处理任务删除事件
     }
 })
+
+// 监听特定类型的任务
+TaskManager.getInstance().addTaskListener(object : TaskListener {
+    override fun onTaskStatusChanged(task: AITaskInfo) {
+        // 只处理文生图任务的状态变化
+    }
+}, TaskType.AI_TYPE_TEXT_TO_IMAGE)
 ```
 
 ### 获取任务列表
@@ -144,6 +149,28 @@ TaskManager.getInstance().deleteTasks(listOf(task))
 TaskManager.getInstance().deleteTasks(selectedTasks)
 ```
 
+### 创建自定义执行器
+
+```kotlin
+// 实现自定义执行器
+import com.common.taskmanager.executor.TaskExecutor
+
+class CustomTaskExecutor : TaskExecutor() {
+    // 实现必要方法...
+    
+    override fun getSupportedTaskTypes(): List<Int> {
+        return listOf(MY_CUSTOM_TASK_TYPE)
+    }
+    
+    // 其他方法实现...
+}
+
+// 注册自定义执行器
+val customExecutor = CustomTaskExecutor()
+val executorRegistry = ExecutorRegistry()
+executorRegistry.registerExecutor(customExecutor)
+```
+
 ### 清理资源
 
 在不再需要时释放资源：
@@ -153,12 +180,22 @@ TaskManager.getInstance().deleteTasks(selectedTasks)
 TaskManager.getInstance().destroy()
 ```
 
+## 优化说明
+
+与旧版框架相比，新版框架进行了以下主要优化：
+
+1. **监听机制优化**：使用`ListenerManager`替代直接的监听器列表，支持按任务类型过滤，提高并发性能
+2. **扩展性增强**：通过`ExecutorRegistry`实现执行器的动态注册和管理
+3. **执行器完善**：完善了`PictureToVideoExecutor`和`OralBroadcastingExecutor`的实现
+4. **重试机制升级**：新增`RetryHelper`提供指数退避策略的重试机制，更加智能
+5. **监听器简化**：合并监听器接口，所有方法可选实现，降低使用复杂度
+
 ## 迁移指南
 
 从旧版任务管理系统迁移到新版系统时，需要注意以下几点：
 
 1. 替换常量引用：将`AITask`中的常量替换为`TaskType`中的对应常量
-2. 更新监听器：使用新的`TaskListener`和`TaskLifecycleListener`接口
+2. 更新监听器：使用新的`TaskListener`接口，只需实现你关心的回调方法
 3. 修改任务管理调用：将`TaskPlanInfoManager`的调用替换为`TaskManager`
 4. 更新导入路径：注意更新为新的包结构中的正确路径
 
@@ -166,8 +203,8 @@ TaskManager.getInstance().destroy()
 
 框架内部已经处理了大部分错误情况，包括：
 
-- 网络请求失败：自动重试，超过最大次数后回调失败
-- 下载文件失败：自动重试，超过最大次数后回调失败
+- 网络请求失败：使用指数退避策略自动重试，超过最大次数后回调失败
+- 下载文件失败：使用指数退避策略自动重试，超过最大次数后回调失败
 - 任务执行异常：捕获并处理异常，不会导致崩溃
 
 ## 性能优化
@@ -176,5 +213,6 @@ TaskManager.getInstance().destroy()
 
 1. 使用协程替代传统线程，减少资源占用
 2. 采用线程安全的集合类，避免并发问题
-3. 使用ConcurrentHashMap和CopyOnWriteArrayList提高并发性能
-4. 任务管理器单例设计，减少对象创建 
+3. 使用ConcurrentHashMap和CopyOnWriteArraySet提高并发性能
+4. 任务管理器单例设计，减少对象创建
+5. 优化监听器通知机制，减少不必要的调用 

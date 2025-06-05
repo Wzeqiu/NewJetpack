@@ -3,11 +3,11 @@ package com.common.taskmanager.core
 import com.blankj.utilcode.util.LogUtils
 import com.common.db.DbManager
 import com.common.db.dao.AITaskInfo
+import com.common.taskmanager.executor.ExecutorRegistry
 import com.common.taskmanager.executor.OralBroadcastingExecutor
 import com.common.taskmanager.executor.PictureToVideoExecutor
-import com.common.taskmanager.executor.TaskExecutor
 import com.common.taskmanager.executor.TextToImageExecutor
-import com.common.taskmanager.listener.TaskLifecycleListener
+import com.common.taskmanager.listener.ListenerManager
 import com.common.taskmanager.listener.TaskListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,7 +15,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
@@ -43,15 +42,14 @@ class TaskManager private constructor() : CoroutineScope {
     private val supervisorJob = SupervisorJob()
     override val coroutineContext = Dispatchers.IO + supervisorJob
 
-    // 任务执行器映射
-    private val executors = ConcurrentHashMap<Int, TaskExecutor>()
+    // 执行器注册表
+    private val executorRegistry = ExecutorRegistry()
+    
+    // 监听器管理器
+    private val listenerManager = ListenerManager()
 
     // 任务列表
     private val taskList = CopyOnWriteArrayList<AITaskInfo>()
-
-    // 状态监听器列表
-    private val statusListeners = CopyOnWriteArrayList<TaskListener>()
-    private val lifecycleListeners = CopyOnWriteArrayList<TaskLifecycleListener>()
 
     // 互斥锁，保证任务操作的线程安全
     private val mutex = Mutex()
@@ -59,27 +57,11 @@ class TaskManager private constructor() : CoroutineScope {
     // 初始化任务执行器
     init {
         // 注册各类任务执行器
-        registerExecutor(TextToImageExecutor())
-        registerExecutor(PictureToVideoExecutor())
-        registerExecutor(OralBroadcastingExecutor())
+        executorRegistry.registerExecutor(TextToImageExecutor())
+        executorRegistry.registerExecutor(PictureToVideoExecutor())
+        executorRegistry.registerExecutor(OralBroadcastingExecutor())
 
         LogUtils.d(TAG, "任务管理器已初始化")
-    }
-
-    /**
-     * 注册任务执行器
-     */
-    private fun registerExecutor(executor: TaskExecutor) {
-        executor.getSupportedTaskTypes().forEach { type ->
-            executors[type] = executor
-        }
-    }
-
-    /**
-     * 获取指定类型的任务执行器
-     */
-    private fun getExecutor(taskType: Int): TaskExecutor? {
-        return executors[taskType]
     }
 
     /**
@@ -100,7 +82,7 @@ class TaskManager private constructor() : CoroutineScope {
                 }
 
                 // 通知监听器
-                lifecycleListeners.forEach { it.onTaskAdded(task) }
+                listenerManager.notifyTaskAdded(task)
             }
         }
     }
@@ -109,7 +91,7 @@ class TaskManager private constructor() : CoroutineScope {
      * 执行任务
      */
     private fun executeTask(task: AITaskInfo) {
-        val executor = getExecutor(task.type)
+        val executor = executorRegistry.getExecutor(task.type)
         if (executor == null) {
             LogUtils.e(TAG, "未找到任务类型对应的执行器: ${task.type}")
             return
@@ -121,15 +103,10 @@ class TaskManager private constructor() : CoroutineScope {
                     // 更新数据库
                     launch {
                         DbManager.taskInfoDao.update(task)
-
+                        
                         // 通知所有监听器
-                        statusListeners.forEach { it.onTaskStatusChanged(task) }
+                        listenerManager.notifyTaskStatusChanged(task)
                     }
-                }
-
-                override fun onTaskProgressUpdated(task: AITaskInfo, progress: Int) {
-                    // 通知所有监听器
-                    statusListeners.forEach { it.onTaskProgressUpdated(task, progress) }
                 }
             })
         }
@@ -139,7 +116,7 @@ class TaskManager private constructor() : CoroutineScope {
      * 取消任务
      */
     fun cancelTask(task: AITaskInfo): Boolean {
-        val executor = getExecutor(task.type) ?: return false
+        val executor = executorRegistry.getExecutor(task.type) ?: return false
 
         launch {
             if (executor.cancelTask(task)) {
@@ -172,7 +149,7 @@ class TaskManager private constructor() : CoroutineScope {
                 DbManager.taskInfoDao.delete(tasks)
 
                 // 通知监听器
-                lifecycleListeners.forEach { it.onTaskRemoved(tasks) }
+                listenerManager.notifyTaskRemoved(tasks)
             }
         }
     }
@@ -223,35 +200,24 @@ class TaskManager private constructor() : CoroutineScope {
     }
 
     /**
-     * 添加任务状态监听器
+     * 添加任务监听器（监听所有类型任务）
      */
-    fun addTaskStatusListener(listener: TaskListener) {
-        if (!statusListeners.contains(listener)) {
-            statusListeners.add(listener)
-        }
+    fun addTaskListener(listener: TaskListener) {
+        listenerManager.addTaskListener(listener)
+    }
+    
+    /**
+     * 添加特定类型的任务监听器
+     */
+    fun addTaskListener(listener: TaskListener, @TaskType.Type taskType: Int) {
+        listenerManager.addTaskListener(listener, taskType)
     }
 
     /**
-     * 移除任务状态监听器
+     * 移除任务监听器
      */
-    fun removeTaskStatusListener(listener: TaskListener) {
-        statusListeners.remove(listener)
-    }
-
-    /**
-     * 添加任务生命周期监听器
-     */
-    fun addTaskLifecycleListener(listener: TaskLifecycleListener) {
-        if (!lifecycleListeners.contains(listener)) {
-            lifecycleListeners.add(listener)
-        }
-    }
-
-    /**
-     * 移除任务生命周期监听器
-     */
-    fun removeTaskLifecycleListener(listener: TaskLifecycleListener) {
-        lifecycleListeners.remove(listener)
+    fun removeTaskListener(listener: TaskListener) {
+        listenerManager.removeTaskListener(listener)
     }
 
     /**
@@ -259,9 +225,8 @@ class TaskManager private constructor() : CoroutineScope {
      */
     fun destroy() {
         supervisorJob.cancel()
-        executors.clear()
-        statusListeners.clear()
-        lifecycleListeners.clear()
+        executorRegistry.clear()
+        listenerManager.clear()
         taskList.clear()
         instance = null
         LogUtils.d(TAG, "任务管理器已销毁")

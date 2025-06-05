@@ -103,10 +103,7 @@ class TextToImageExecutor : TaskExecutor() {
         val targetFile = FileDownloadHelper.createResultFile(task.type)
         FileDownloadHelper.downloadFile(
             resultUrl,
-            targetFile,
-            onProgress = { progress ->
-                statusListener.onTaskProgressUpdated(task, progress)
-            }
+            targetFile
         ).onSuccess { file ->
             // 更新任务状态和结果信息
             task.apply {

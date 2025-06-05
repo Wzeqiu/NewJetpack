@@ -98,10 +98,7 @@ abstract class VideoTaskExecutor : TaskExecutor() {
         val targetFile = FileDownloadHelper.createResultFile(task.type)
         FileDownloadHelper.downloadFile(
             resultUrl, 
-            targetFile,
-            onProgress = { progress ->
-                statusListener.onTaskProgressUpdated(task, progress)
-            }
+            targetFile
         ).onSuccess { file ->
             // 获取视频信息
 
