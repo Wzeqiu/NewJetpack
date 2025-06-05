@@ -1,6 +1,7 @@
 package com.common.db
 
 import android.content.Context
+import com.common.db.dao.AITaskInfoDao
 import com.common.db.dao.MyObjectBox
 import com.common.db.dao.NewUserDao
 import io.objectbox.BoxStore
@@ -20,5 +21,9 @@ object DbManager {
      * 获取 NewUserDao 实例
      */
     val newUserDao: NewUserDao by lazy { NewUserDao() }
+    /**
+     * 获取 AITaskInfoDao 实例
+     */
+    val taskInfoDao: AITaskInfoDao by lazy { AITaskInfoDao() }
 
 }

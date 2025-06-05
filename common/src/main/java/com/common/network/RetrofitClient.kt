@@ -1,5 +1,8 @@
 package com.common.network
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -33,3 +36,25 @@ object RetrofitClient {
 
     fun <T> createService(service: Class<T>): T = retrofit.create(service)
 }
+
+fun <T> CoroutineScope.request(
+    block:suspend () -> BaseResponse<T>,
+    onFailure:  (Int, String?) -> Unit= { _, _ -> },
+    onSuccess: (T) -> Unit
+) {
+    launch(Dispatchers.IO) {
+        runCatching {
+            block.invoke()
+        }.onSuccess {
+            if (it.code==200) {
+                onSuccess.invoke(it.data)
+            } else {
+                onFailure.invoke(it.code, it.message)
+            }
+        }.onFailure {
+           onFailure.invoke(-1, it.message)
+        }
+    }
+}
+
+val httpServer by lazy { RetrofitClient.createService(ApiServer::class.java) }
