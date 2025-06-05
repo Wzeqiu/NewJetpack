@@ -38,15 +38,8 @@ object NetworkHelper {
                 if (it.isSuccess()){
                     return Result.success(it.data)
                 }
-            }
-            try {
-                val result = block()
-                if (result.isSuccess()) {
-                    return result
-                }
-                lastError = result.exceptionOrNull()
-            } catch (e: Exception) {
-                lastError = e
+            }.onFailure {
+                lastError = it
             }
 
             // 达到最大重试次数，返回失败
