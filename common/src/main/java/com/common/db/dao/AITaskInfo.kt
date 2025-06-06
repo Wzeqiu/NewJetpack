@@ -8,8 +8,8 @@ import java.io.Serializable
 
 @Entity
 class AITaskInfo : Serializable {
-    @Id
-    val id: Long = 0
+    @Id(assignable = false)
+    var id: Long?=null
 
     /**
      * 任务类型
@@ -66,12 +66,12 @@ class AITaskInfo : Serializable {
     /**
      * 是否查看结果
      */
-    private val read = false
+     val read = false
 
     /**
      * 名称
      */
-    private val name: String? = null
+     val name: String? = null
 
 
     /**
