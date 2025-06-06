@@ -8,7 +8,7 @@ import java.io.Serializable
 
 @Entity
 class AITaskInfo : Serializable {
-    @Id(assignable = false)
+    @Id
     var id: Long?=null
 
     /**
