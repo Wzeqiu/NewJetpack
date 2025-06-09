@@ -10,9 +10,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
 
@@ -66,17 +68,20 @@ abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor,
         cancelTyped(task, adapter)
 
         mutex.withLock {
+            // 标记任务开始执行
+            adapter.markStarted(task)
+            callback.onStatusChanged(task)
+
             // 创建并启动任务作业
             val job = launch {
                 try {
                     LogUtils.d(TAG, "开始执行任务: $taskId, 类型: ${adapter.getType(task)}")
 
-                    // 标记任务开始执行
-                    adapter.markStarted(task)
-                    callback.onStatusChanged(task)
-
-                    // 执行具体的任务处理逻辑
-                    doExecute(task, adapter, callback)
+                    // 使用coroutineScope确保所有子协程完成后才结束
+                    coroutineScope {
+                        // 执行具体的任务处理逻辑，同时传递当前协程作用域
+                        doExecute(task, adapter, callback, this)
+                    }
 
                     LogUtils.d(TAG, "任务执行完成: $taskId")
                 } catch (e: CancellationException) {
@@ -93,16 +98,21 @@ abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor,
             }
 
             runningJobs[taskId] = job
+
+            // 等待作业完成，而不是立即返回
+            job.join()
         }
     }
 
     /**
      * 执行具体的任务处理逻辑，由子类实现
+     * @param scope 协程作用域，子协程应该在此作用域内启动
      */
     protected abstract suspend fun doExecute(
         task: T,
         adapter: A,
-        callback: TaskCallback<T>
+        callback: TaskCallback<T>,
+        scope: CoroutineScope = this
     )
 
     /**

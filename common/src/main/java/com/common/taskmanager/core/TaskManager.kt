@@ -57,6 +57,22 @@ class TaskManager : CoroutineScope {
 
     // 互斥锁
     private val mutex = Mutex()
+    
+    // 全局共享回调实例
+    private val sharedCallback = object : TaskCallback<Any> {
+        override fun onStatusChanged(task: Any) {
+            launch {
+                val adapter = getAdapter(task) ?: return@launch
+                
+                // 更新数据库
+                adapter.updateTask(task)
+
+                // 通知监听器
+                val event = TaskEvent(task, adapter)
+                listenerManager.notifyTaskStatusChanged(event)
+            }
+        }
+    }
 
     init {
         // 注册适配器
@@ -131,6 +147,14 @@ class TaskManager : CoroutineScope {
     }
 
     /**
+     * 获取共享回调实例，进行类型转换
+     */
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Any> getCallback(): TaskCallback<T> {
+        return sharedCallback as TaskCallback<T>
+    }
+
+    /**
      * 执行任务
      * @param task 任务对象
      * @param adapter 适配器
@@ -147,18 +171,8 @@ class TaskManager : CoroutineScope {
 
         launch {
             kotlin.runCatching {
-                executor.execute(task, adapter, object : TaskCallback<T> {
-                    override fun onStatusChanged(task: T) {
-                        launch {
-                            // 更新数据库
-                            adapter.updateTask(task)
-
-                            // 通知监听器
-                            val event = TaskEvent(task, adapter)
-                            listenerManager.notifyTaskStatusChanged(event)
-                        }
-                    }
-                })
+                // 使用全局共享回调对象
+                executor.execute(task, adapter,  sharedCallback)
             }.onFailure {
                 LogUtils.e(TAG, "执行任务异常: ${adapter.getTaskId(task)}", it)
                 adapter.markFailure(task, it.message)
