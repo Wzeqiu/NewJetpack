@@ -21,7 +21,7 @@ interface TaskExecutor {
      * @param adapter 任务适配器
      * @return 是否成功取消
      */
-    suspend fun <T> cancel(task: T, adapter: TaskAdapter<T>): Boolean
+    suspend fun  <T> cancel(task: T, adapter: TaskAdapter<T>): Boolean
     
     /**
      * 检查任务类型是否被支持
