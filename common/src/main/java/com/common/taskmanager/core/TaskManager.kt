@@ -89,7 +89,7 @@ class TaskManager : CoroutineScope {
      * 注册任务执行器
      * @param executor 任务执行器
      */
-    fun registerExecutor(executor: TaskExecutor<*,*>) {
+    fun registerExecutor(executor: TaskExecutor<*, *>) {
         for (taskType in executor.getSupportedTaskTypes()) {
             executors[taskType] = executor
         }
@@ -145,7 +145,7 @@ class TaskManager : CoroutineScope {
         }
 
         launch {
-            try {
+            kotlin.runCatching {
                 executor.execute(task, adapter, object : TaskCallback<T> {
                     override fun onStatusChanged(task: T) {
                         launch {
@@ -158,9 +158,9 @@ class TaskManager : CoroutineScope {
                         }
                     }
                 })
-            } catch (e: Exception) {
-                LogUtils.e(TAG, "执行任务异常: ${adapter.getTaskId(task)}", e)
-                adapter.markFailure(task, e.message)
+            }.onFailure {
+                LogUtils.e(TAG, "执行任务异常: ${adapter.getTaskId(task)}", it)
+                adapter.markFailure(task, it.message)
             }
         }
     }
