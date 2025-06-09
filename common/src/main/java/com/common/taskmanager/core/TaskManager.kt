@@ -10,6 +10,7 @@ import com.common.taskmanager.api.TaskEventListener
 import com.common.taskmanager.api.TaskExecutor
 import com.common.taskmanager.ext.AITaskInfoAdapter
 import com.common.taskmanager.ext.TextToImageExecutor
+import com.common.taskmanager.ext.VideoTaskExecutor
 import com.common.taskmanager.impl.ListenerManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +50,7 @@ class TaskManager : CoroutineScope {
     private val adapters = ConcurrentHashMap<Class<*>, TaskAdapter<*>>()
 
     // 任务类型到执行器的映射
-    private val executors = ConcurrentHashMap<Int, TaskExecutor>()
+    private val executors = ConcurrentHashMap<Int, TaskExecutor<*, *>>()
 
     // 监听器管理器
     private val listenerManager = ListenerManager()
@@ -57,12 +58,13 @@ class TaskManager : CoroutineScope {
     // 互斥锁
     private val mutex = Mutex()
 
-
     init {
-        registerAdapter(AITaskInfo::class.java, AITaskInfoAdapter())
-        registerExecutor(TextToImageExecutor())
+        // 注册执行器
+        val adapter = AITaskInfoAdapter()
+        registerAdapter<AITaskInfo>(adapter)
+        registerExecutor(TextToImageExecutor(adapter))
+        registerExecutor(VideoTaskExecutor(adapter))
     }
-
 
     /**
      * 注册任务适配器
@@ -87,11 +89,14 @@ class TaskManager : CoroutineScope {
      * 注册任务执行器
      * @param executor 任务执行器
      */
-    fun registerExecutor(executor: TaskExecutor) {
+    fun registerExecutor(executor: TaskExecutor<*,*>) {
         for (taskType in executor.getSupportedTaskTypes()) {
             executors[taskType] = executor
         }
-        LogUtils.d(TAG, "注册任务执行器: ${executor.javaClass.simpleName}, 支持任务类型: ${executor.getSupportedTaskTypes()}")
+        LogUtils.d(
+            TAG,
+            "注册任务执行器: ${executor.javaClass.simpleName}, 支持任务类型: ${executor.getSupportedTaskTypes()}"
+        )
     }
 
     /**
@@ -99,7 +104,8 @@ class TaskManager : CoroutineScope {
      * @param task 任务对象
      */
     fun <T : Any> addTask(task: T) {
-        val adapter = getAdapter(task) ?: throw IllegalArgumentException("未找到任务适配器: ${task.javaClass.simpleName}")
+        val adapter = getAdapter(task)
+            ?: throw IllegalArgumentException("未找到任务适配器: ${task.javaClass.simpleName}")
 
         launch {
             // 保存任务到数据库
@@ -115,7 +121,10 @@ class TaskManager : CoroutineScope {
                 val event = TaskEvent(task, adapter)
                 listenerManager.notifyTaskAdded(event)
 
-                LogUtils.d(TAG, "任务已添加: ${adapter.getTaskId(task)}, 类型: ${adapter.getType(task)}")
+                LogUtils.d(
+                    TAG,
+                    "任务已添加: ${adapter.getTaskId(task)}, 类型: ${adapter.getType(task)}"
+                )
             }
         }
     }
@@ -254,7 +263,8 @@ class TaskManager : CoroutineScope {
      */
     suspend fun <T : Any> getPendingTasks(clazz: Class<T>): List<T> {
         val adapter = adapters[clazz] as? TaskAdapter<T> ?: return emptyList()
-        return adapter.loadAllTasks().filter { adapter.getStatus(it) == TaskConstant.TASK_STATUS_CREATE }
+        return adapter.loadAllTasks()
+            .filter { adapter.getStatus(it) == TaskConstant.TASK_STATUS_CREATE }
     }
 
     /**
