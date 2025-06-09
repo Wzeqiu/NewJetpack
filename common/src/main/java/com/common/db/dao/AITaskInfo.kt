@@ -1,5 +1,6 @@
 package com.common.db.dao
 
+import com.common.taskmanager.TaskConstent
 import com.common.taskmanager.core.TaskType
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
@@ -14,7 +15,7 @@ class AITaskInfo : Serializable {
     /**
      * 任务类型
      */
-    @TaskType.Type
+    @TaskConstent.Type
     val type = 0
 
     /**

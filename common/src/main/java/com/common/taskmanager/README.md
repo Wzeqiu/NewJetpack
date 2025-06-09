@@ -1,218 +1,222 @@
-# 新版AI任务管理框架
+# 统一任务管理系统
 
-## 架构设计
+本文档介绍如何使用新的统一任务管理系统，该系统支持多种不同类型的任务表和对象。
 
-新版任务管理框架采用了更加模块化和可扩展的设计，主要包含以下核心组件：
+## 设计目标
 
-1. **TaskManager**：单例核心管理器，负责任务的创建、执行、状态更新和删除等操作
-2. **ExecutorRegistry**：执行器注册表，支持动态注册和管理任务执行器
-3. **TaskExecutor**：任务执行器抽象类，定义了任务执行的通用接口
-4. **ListenerManager**：监听器管理器，提供高效的事件通知机制
-5. **RetryHelper**：重试辅助类，提供指数退避策略的重试机制
+1. **支持多类型任务**：能够处理不同表和不同类型的任务对象
+2. **统一状态管理**：维持一致的任务状态定义和生命周期
+3. **易于扩展**：简单地添加新的任务类型和执行器
+4. **解耦合**：任务管理器不直接依赖于具体的任务实现
+5. **统一监听**：提供统一的事件通知机制
 
-### 目录结构
+## 系统架构
 
-根据功能类型进行了分包，使架构更加清晰：
+系统采用适配器模式，通过适配器将不同类型的任务转换为统一的操作接口。主要组件包括：
 
-```
-com.common.taskmanager/
-├── core/                       # 核心类和接口
-│   ├── TaskType.kt             # 任务类型和状态定义
-│   ├── TaskExtensions.kt       # 任务扩展函数
-│   ├── TaskManager.kt          # 任务管理器
-│   └── TaskManagerExtensions.kt # 任务管理器扩展函数
-├── listener/                   # 监听器相关
-│   ├── TaskListener.kt         # 任务监听器接口
-│   └── ListenerManager.kt      # 监听器管理器
-├── helper/                     # 辅助工具类
-│   ├── NetworkHelper.kt        # 网络操作辅助类
-│   ├── FileDownloadHelper.kt   # 文件下载辅助类
-│   └── RetryHelper.kt          # 重试机制辅助类
-├── executor/                   # 执行器实现
-│   ├── ExecutorRegistry.kt     # 执行器注册表
-│   ├── TaskExecutor.kt         # 任务执行器抽象类
-│   ├── TextToImageExecutor.kt  # 文生图任务执行器
-│   ├── VideoTaskExecutor.kt    # 视频类任务基础执行器
-│   ├── PictureToVideoExecutor.kt # 图生视频任务执行器
-│   └── OralBroadcastingExecutor.kt # AI口播任务执行器
-└── README.md                   # 使用说明
-```
-
-## 特性
-
-1. **统一的任务管理**：通过`TaskManager`统一管理所有类型的AI任务
-2. **模块化设计**：每种任务类型有专门的执行器，便于扩展
-3. **健壮的错误处理**：内置指数退避重试机制和异常捕获
-4. **线程安全**：使用协程和互斥锁保证线程安全
-5. **低内存占用**：优化内存使用，避免泄漏
-6. **按类型监听**：支持按任务类型过滤的监听机制
-7. **动态注册执行器**：允许在运行时注册和管理执行器
-8. **灵活的监听器**：提供可选实现的监听器接口，按需覆盖感兴趣的事件
+1. **TaskAdapter**：任务适配器接口，将不同类型的任务适配为统一接口
+2. **UnifiedTaskManager**：统一任务管理器，处理任务的添加、执行、取消和删除
+3. **TaskExecutor**：任务执行器接口，负责执行特定类型的任务
+4. **TaskEvent**：任务事件，封装任务和适配器信息
+5. **TaskEventListener**：任务事件监听器，响应任务状态变化
+6. **ListenerManager**：监听器管理类，管理和通知监听器
 
 ## 使用方法
 
-### 初始化
+### 1. 初始化任务管理器
 
-在应用启动时初始化任务管理器并加载任务：
+在应用启动时初始化统一任务管理器，并注册适配器和执行器：
 
 ```kotlin
-// 在Application或合适的地方初始化
-import com.common.taskmanager.core.TaskManager
+// 获取任务管理器单例
+val taskManager = UnifiedTaskManager.getInstance()
 
-val taskManager = TaskManager.getInstance()
+// 注册AITaskInfo适配器
+taskManager.registerAdapter(AITaskInfo::class.java, AITaskInfoAdapter())
+
+// 注册其他类型的任务适配器
+taskManager.registerAdapter(OtherTaskType::class.java, OtherTaskAdapter())
+
+// 注册任务执行器
+taskManager.registerExecutor(TextToImageExecutor())
+taskManager.registerExecutor(PictureToVideoExecutor())
+taskManager.registerExecutor(OtherTypeExecutor())
+
+// 刷新任务列表（从数据库加载所有任务）
 taskManager.refreshTasks()
 ```
 
-### 添加任务
+### 2. 添加任务
+
+添加任务非常简单，只需直接传入任务对象：
 
 ```kotlin
-// 创建一个新的AI任务
-import com.common.taskmanager.core.TaskType
-
-val task = AITaskInfo().apply {
+// 创建AITaskInfo类型的任务
+val aiTask = AITaskInfo().apply {
     taskId = "task_${System.currentTimeMillis()}"
     type = TaskType.AI_TYPE_TEXT_TO_IMAGE
     status = TaskType.TASK_STATUS_CREATE
-    createTime = System.currentTimeMillis()
     // 设置其他必要属性...
 }
 
-// 添加任务并自动执行
-TaskManager.getInstance().addTask(task)
+// 添加到任务管理器
+taskManager.addTask(aiTask)
+
+// 添加其他类型的任务
+val otherTask = OtherTaskType(
+    id = "other_${System.currentTimeMillis()}",
+    type = TaskType.AI_TYPE_PICTURE_TO_VIDEO
+)
+taskManager.addTask(otherTask)
 ```
 
-### 监听任务事件
+### 3. 监听任务事件
+
+注册任务监听器，接收任务状态变化通知：
 
 ```kotlin
-// 创建监听器，只覆盖感兴趣的事件
-import com.common.taskmanager.listener.TaskListener
-
-TaskManager.getInstance().addTaskListener(object : TaskListener {
-    // 所有方法都是可选实现的，只需覆盖你关心的事件
-
-    override fun onTaskStatusChanged(task: AITaskInfo) {
+// 创建任务监听器
+val listener = object : TaskEventListener {
+    override fun onTaskStatusChanged(event: TaskEvent<*>) {
+        val taskId = event.getTaskId()
+        val status = event.getStatus()
+        
         // 处理任务状态变化
-        when (task.status) {
+        when (status) {
             TaskType.TASK_STATUS_SUCCESS -> {
-                // 任务成功完成
+                // 任务成功
             }
             TaskType.TASK_STATUS_FAILURE -> {
                 // 任务失败
             }
+            TaskType.TASK_STATUS_RUNNING -> {
+                // 任务执行中
+            }
         }
     }
     
-    override fun onTaskAdded(task: AITaskInfo) {
+    override fun onTaskAdded(event: TaskEvent<*>) {
         // 处理任务添加事件
     }
     
-    override fun onTaskRemoved(tasks: List<AITaskInfo>) {
+    override fun onTaskRemoved(events: List<TaskEvent<*>>) {
         // 处理任务删除事件
     }
-})
+}
+
+// 注册全局监听器（监听所有类型任务）
+taskManager.addTaskListener(listener)
 
 // 监听特定类型的任务
-TaskManager.getInstance().addTaskListener(object : TaskListener {
-    override fun onTaskStatusChanged(task: AITaskInfo) {
-        // 只处理文生图任务的状态变化
-    }
-}, TaskType.AI_TYPE_TEXT_TO_IMAGE)
+taskManager.addTaskListener(listener, TaskType.AI_TYPE_TEXT_TO_IMAGE)
 ```
 
-### 获取任务列表
+### 4. 取消和删除任务
 
 ```kotlin
-// 获取所有任务
-val allTasks = TaskManager.getInstance().getTasks()
+// 取消任务
+taskManager.cancelTask(task)
 
-// 获取特定类型的任务
-val textToImageTasks = TaskManager.getInstance().getTasksByType(TaskType.AI_TYPE_TEXT_TO_IMAGE)
-
-// 获取待处理的任务
-val pendingTasks = TaskManager.getInstance().getPendingTasks()
-
-// 使用扩展函数检查是否有特定类型的任务正在运行
-import com.common.taskmanager.core.hasRunningTextToImageTask
-
-if (TaskManager.getInstance().hasRunningTextToImageTask()) {
-    // 有文生图任务正在运行
-}
-```
-
-### 删除任务
-
-```kotlin
 // 删除单个任务
-TaskManager.getInstance().deleteTasks(listOf(task))
+taskManager.deleteTasks(listOf(task))
 
 // 删除多个任务
-TaskManager.getInstance().deleteTasks(selectedTasks)
+taskManager.deleteTasks(selectedTasks)
 ```
 
-### 创建自定义执行器
+### 5. 查询任务
 
 ```kotlin
-// 实现自定义执行器
-import com.common.taskmanager.executor.TaskExecutor
-
-class CustomTaskExecutor : TaskExecutor() {
-    // 实现必要方法...
-    
-    override fun getSupportedTaskTypes(): List<Int> {
-        return listOf(MY_CUSTOM_TASK_TYPE)
-    }
-    
-    // 其他方法实现...
+// 异步获取特定类型的任务
+launch {
+    val textToImageTasks = taskManager.getTasksByType(
+        AITaskInfo::class.java, 
+        TaskType.AI_TYPE_TEXT_TO_IMAGE
+    )
+    // 处理查询结果...
 }
 
-// 注册自定义执行器
-val customExecutor = CustomTaskExecutor()
-val executorRegistry = ExecutorRegistry()
-executorRegistry.registerExecutor(customExecutor)
+// 获取待处理的任务
+launch {
+    val pendingTasks = taskManager.getPendingTasks(AITaskInfo::class.java)
+    // 处理查询结果...
+}
 ```
 
-### 清理资源
+### 6. 清理资源
 
-在不再需要时释放资源：
+在不再需要任务管理器时释放资源：
 
 ```kotlin
-// 通常在应用退出时调用
-TaskManager.getInstance().destroy()
+// 销毁任务管理器
+taskManager.destroy()
 ```
 
-## 优化说明
+## 扩展新的任务类型
 
-与旧版框架相比，新版框架进行了以下主要优化：
+### 1. 创建适配器
 
-1. **监听机制优化**：使用`ListenerManager`替代直接的监听器列表，支持按任务类型过滤，提高并发性能
-2. **扩展性增强**：通过`ExecutorRegistry`实现执行器的动态注册和管理
-3. **执行器完善**：完善了`PictureToVideoExecutor`和`OralBroadcastingExecutor`的实现
-4. **重试机制升级**：新增`RetryHelper`提供指数退避策略的重试机制，更加智能
-5. **监听器简化**：合并监听器接口，所有方法可选实现，降低使用复杂度
+为新的任务类型创建适配器，实现TaskAdapter接口：
 
-## 迁移指南
+```kotlin
+class NewTaskAdapter : TaskAdapter<NewTask> {
+    override fun getTaskId(task: NewTask): String = task.id
+    
+    override fun getType(task: NewTask): Int = task.taskType
+    
+    override fun getStatus(task: NewTask): Int = task.status
+    
+    override suspend fun saveTask(task: NewTask) {
+        // 实现保存任务到数据库的逻辑
+    }
+    
+    // 实现其他适配方法...
+    
+    override fun getTaskClass(): Class<NewTask> {
+        return NewTask::class.java
+    }
+}
+```
 
-从旧版任务管理系统迁移到新版系统时，需要注意以下几点：
+### 2. 创建执行器
 
-1. 替换常量引用：将`AITask`中的常量替换为`TaskType`中的对应常量
-2. 更新监听器：使用新的`TaskListener`接口，只需实现你关心的回调方法
-3. 修改任务管理调用：将`TaskPlanInfoManager`的调用替换为`TaskManager`
-4. 更新导入路径：注意更新为新的包结构中的正确路径
+为新的任务类型创建执行器，继承AbstractTaskExecutor：
 
-## 错误处理
+```kotlin
+class NewTaskExecutor : AbstractTaskExecutor() {
+    override suspend fun <T> doExecute(
+        task: T,
+        adapter: TaskAdapter<T>,
+        callback: TaskCallback<T>
+    ) {
+        // 实现任务执行逻辑
+    }
+    
+    override fun getSupportedTaskTypes(): List<Int> {
+        return listOf(TaskType.NEW_TASK_TYPE)
+    }
+    
+    override fun isSupportedTaskType(taskType: Int): Boolean {
+        return taskType == TaskType.NEW_TASK_TYPE
+    }
+}
+```
 
-框架内部已经处理了大部分错误情况，包括：
+### 3. 注册适配器和执行器
 
-- 网络请求失败：使用指数退避策略自动重试，超过最大次数后回调失败
-- 下载文件失败：使用指数退避策略自动重试，超过最大次数后回调失败
-- 任务执行异常：捕获并处理异常，不会导致崩溃
+```kotlin
+// 注册新的适配器
+taskManager.registerAdapter(NewTask::class.java, NewTaskAdapter())
 
-## 性能优化
+// 注册新的执行器
+taskManager.registerExecutor(NewTaskExecutor())
+```
 
-新框架在性能方面做了以下优化：
+## 最佳实践
 
-1. 使用协程替代传统线程，减少资源占用
-2. 采用线程安全的集合类，避免并发问题
-3. 使用ConcurrentHashMap和CopyOnWriteArraySet提高并发性能
-4. 任务管理器单例设计，减少对象创建
-5. 优化监听器通知机制，减少不必要的调用 
+1. **适当分组**：将相关的任务类型分组到同一个执行器中
+2. **适配器职责单一**：每个适配器只负责一种类型的任务
+3. **执行器可共享**：一个执行器可以处理多种类型的任务
+4. **错误处理**：在适配器和执行器中实现适当的错误处理逻辑
+5. **避免阻塞**：任务执行应该是非阻塞的，使用协程处理耗时操作
+6. **保持同步**：确保数据库和内存中的任务状态一致 
