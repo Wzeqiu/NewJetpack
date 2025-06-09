@@ -1,10 +1,10 @@
-package com.common.taskmanager.executor
+package com.common.taskmanager.ext
 
 import com.blankj.utilcode.util.LogUtils
-import com.common.taskmanager.TaskConstent
-import com.common.taskmanager.adapter.TaskAdapter
-import com.common.taskmanager.callback.TaskCallback
-import com.common.taskmanager.core.TaskType
+import com.common.taskmanager.TaskConstant
+import com.common.taskmanager.api.TaskAdapter
+import com.common.taskmanager.api.TaskCallback
+import com.common.taskmanager.impl.AbstractTaskExecutor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
@@ -44,10 +44,10 @@ class TextToImageExecutor : AbstractTaskExecutor() {
     }
     
     override fun isSupportedTaskType(taskType: Int): Boolean {
-        return taskType == TaskConstent.AI_TYPE_TEXT_TO_IMAGE
+        return taskType == TaskConstant.AI_TYPE_TEXT_TO_IMAGE
     }
     
     override fun getSupportedTaskTypes(): List<Int> {
-        return listOf(TaskConstent.AI_TYPE_TEXT_TO_IMAGE)
+        return listOf(TaskConstant.AI_TYPE_TEXT_TO_IMAGE)
     }
 } 

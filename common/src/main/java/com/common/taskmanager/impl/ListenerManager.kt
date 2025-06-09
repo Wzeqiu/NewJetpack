@@ -1,6 +1,8 @@
-package com.common.taskmanager.event
+package com.common.taskmanager.impl
 
-import com.common.taskmanager.TaskConstent
+import com.common.taskmanager.TaskConstant
+import com.common.taskmanager.api.TaskEvent
+import com.common.taskmanager.api.TaskEventListener
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -25,7 +27,7 @@ class ListenerManager {
     /**
      * 添加特定类型的任务监听器
      */
-    fun addListener(listener: TaskEventListener, @TaskConstent.Type taskType: Int) {
+    fun addListener(listener: TaskEventListener, @TaskConstant.Type taskType: Int) {
         val listeners = typeListeners.getOrPut(taskType) { CopyOnWriteArraySet() }
         listeners.add(listener)
     }

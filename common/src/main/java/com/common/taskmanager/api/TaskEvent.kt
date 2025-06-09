@@ -1,6 +1,4 @@
-package com.common.taskmanager.event
-
-import com.common.taskmanager.adapter.TaskAdapter
+package com.common.taskmanager.api
 
 /**
  * 任务事件类

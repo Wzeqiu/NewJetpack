@@ -1,9 +1,6 @@
-package com.common.taskmanager.executor
+package com.common.taskmanager.api
 
-import com.common.taskmanager.TaskConstent
-import com.common.taskmanager.adapter.TaskAdapter
-import com.common.taskmanager.callback.TaskCallback
-import com.common.taskmanager.core.TaskType
+import com.common.taskmanager.TaskConstant
 
 /**
  * 任务执行器接口
@@ -31,7 +28,7 @@ interface TaskExecutor {
      * @param taskType 任务类型
      * @return 是否支持
      */
-    fun isSupportedTaskType(@TaskConstent.Type taskType: Int): Boolean
+    fun isSupportedTaskType(@TaskConstant.Type taskType: Int): Boolean
     
     /**
      * 获取执行器支持的任务类型

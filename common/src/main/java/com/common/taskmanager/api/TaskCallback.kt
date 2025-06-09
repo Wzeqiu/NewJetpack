@@ -1,4 +1,4 @@
-package com.common.taskmanager.callback
+package com.common.taskmanager.api
 
 /**
  * 任务回调接口

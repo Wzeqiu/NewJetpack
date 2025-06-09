@@ -1,8 +1,9 @@
-package com.common.taskmanager.adapter
+package com.common.taskmanager.ext
 
 import com.common.db.DbManager
 import com.common.db.dao.AITaskInfo
-import com.common.taskmanager.core.TaskType
+import com.common.taskmanager.TaskConstant
+import com.common.taskmanager.api.TaskAdapter
 
 /**
  * AITaskInfo适配器
@@ -24,8 +25,13 @@ class AITaskInfoAdapter : TaskAdapter<AITaskInfo> {
         DbManager.taskInfoDao.update(task)
     }
     
-    override suspend fun deleteTask(task: AITaskInfo) {
-        DbManager.taskInfoDao.delete(task)
+    override suspend fun deleteTask(task: Any) {
+        if (task is AITaskInfo) {
+            DbManager.taskInfoDao.delete(task)
+        } else if (task is List<*>) {
+            val tasks = task.filterIsInstance<AITaskInfo>()
+            tasks.forEach { DbManager.taskInfoDao.delete(it) }
+        }
     }
     
     override suspend fun loadAllTasks(): List<AITaskInfo> {
@@ -50,33 +56,20 @@ class AITaskInfoAdapter : TaskAdapter<AITaskInfo> {
     }
     
     override fun markStarted(task: AITaskInfo) {
-        task.status = TaskType.TASK_STATUS_RUNNING
+        task.status = TaskConstant.TASK_STATUS_RUNNING
     }
     
     override fun markSuccess(task: AITaskInfo, result: String?) {
-        task.status = TaskType.TASK_STATUS_SUCCESS
+        task.status = TaskConstant.TASK_STATUS_SUCCESS
         task.result = result
     }
     
     override fun markFailure(task: AITaskInfo, reason: String?) {
-        task.status = TaskType.TASK_STATUS_FAILURE
+        task.status = TaskConstant.TASK_STATUS_FAILURE
         // 可以在result字段中存储失败原因
         if (reason != null) {
             task.result = "失败原因：$reason"
         }
-    }
-    
-    override fun isActive(task: AITaskInfo): Boolean {
-        return task.status == TaskType.TASK_STATUS_CREATE || 
-               task.status == TaskType.TASK_STATUS_RUNNING
-    }
-    
-    override fun isCompleted(task: AITaskInfo): Boolean {
-        return task.status == TaskType.TASK_STATUS_SUCCESS
-    }
-    
-    override fun isFailed(task: AITaskInfo): Boolean {
-        return task.status == TaskType.TASK_STATUS_FAILURE
     }
     
     override fun getTaskClass(): Class<AITaskInfo> {

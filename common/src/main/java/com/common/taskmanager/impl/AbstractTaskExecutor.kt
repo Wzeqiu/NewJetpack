@@ -1,9 +1,10 @@
-package com.common.taskmanager.executor
+package com.common.taskmanager.impl
 
 import com.blankj.utilcode.util.LogUtils
-import com.common.taskmanager.adapter.TaskAdapter
-import com.common.taskmanager.callback.TaskCallback
-import com.common.taskmanager.core.TaskType
+import com.common.taskmanager.TaskConstant
+import com.common.taskmanager.api.TaskAdapter
+import com.common.taskmanager.api.TaskCallback
+import com.common.taskmanager.api.TaskExecutor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

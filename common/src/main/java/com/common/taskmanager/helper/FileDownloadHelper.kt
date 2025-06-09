@@ -1,8 +1,7 @@
 package com.common.taskmanager.helper
 
 import android.util.Log
-import com.common.taskmanager.TaskConstent
-import com.common.taskmanager.core.TaskType
+import com.common.taskmanager.TaskConstant
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
 import kotlin.coroutines.resume
@@ -20,9 +19,9 @@ object FileDownloadHelper {
      * @param taskType 任务类型
      * @return 文件对象
      */
-    fun createResultFile(@TaskConstent.Type taskType: Int): File {
+    fun createResultFile(@TaskConstant.Type taskType: Int): File {
         val extension = when (taskType) {
-            TaskConstent.AI_TYPE_TEXT_TO_IMAGE -> "png"
+            TaskConstant.AI_TYPE_TEXT_TO_IMAGE -> "png"
             else -> "mp4"
         }
         

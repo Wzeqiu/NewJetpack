@@ -1,6 +1,6 @@
-package com.common.taskmanager.adapter
+package com.common.taskmanager.api
 
-import com.common.taskmanager.core.TaskType
+import com.common.taskmanager.TaskConstant
 
 /**
  * 任务适配器接口
@@ -36,7 +36,7 @@ interface TaskAdapter<T> {
     /**
      * 删除任务
      */
-    suspend fun deleteTask(task: T)
+    suspend fun deleteTask(task: Any)
 
     /**
      * 加载所有任务
@@ -51,7 +51,7 @@ interface TaskAdapter<T> {
     /**
      * 设置任务状态
      */
-    fun setStatus(task: T, @TaskType.Status status: Int)
+    fun setStatus(task: T, @TaskConstant.Status status: Int)
 
     /**
      * 设置任务结果
@@ -83,22 +83,22 @@ interface TaskAdapter<T> {
      */
     fun isActive(task: T): Boolean {
         val status = getStatus(task)
-        return status == TaskType.TASK_STATUS_CREATE || 
-               status == TaskType.TASK_STATUS_RUNNING
+        return status == TaskConstant.TASK_STATUS_CREATE || 
+               status == TaskConstant.TASK_STATUS_RUNNING
     }
 
     /**
      * 判断任务是否已完成
      */
     fun isCompleted(task: T): Boolean {
-        return getStatus(task) == TaskType.TASK_STATUS_SUCCESS
+        return getStatus(task) == TaskConstant.TASK_STATUS_SUCCESS
     }
 
     /**
      * 判断任务是否已失败
      */
     fun isFailed(task: T): Boolean {
-        return getStatus(task) == TaskType.TASK_STATUS_FAILURE
+        return getStatus(task) == TaskConstant.TASK_STATUS_FAILURE
     }
 
     /**

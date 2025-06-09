@@ -1,16 +1,16 @@
-package com.common.taskmanager
+package com.common.taskmanager.core
 
 import com.blankj.utilcode.util.LogUtils
 import com.common.db.dao.AITaskInfo
-import com.common.taskmanager.adapter.AITaskInfoAdapter
-import com.common.taskmanager.adapter.TaskAdapter
-import com.common.taskmanager.callback.TaskCallback
-import com.common.taskmanager.core.TaskType
-import com.common.taskmanager.event.ListenerManager
-import com.common.taskmanager.event.TaskEvent
-import com.common.taskmanager.event.TaskEventListener
-import com.common.taskmanager.executor.TaskExecutor
-import com.common.taskmanager.executor.TextToImageExecutor
+import com.common.taskmanager.TaskConstant
+import com.common.taskmanager.api.TaskAdapter
+import com.common.taskmanager.api.TaskCallback
+import com.common.taskmanager.api.TaskEvent
+import com.common.taskmanager.api.TaskEventListener
+import com.common.taskmanager.api.TaskExecutor
+import com.common.taskmanager.ext.AITaskInfoAdapter
+import com.common.taskmanager.ext.TextToImageExecutor
+import com.common.taskmanager.impl.ListenerManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -107,7 +107,7 @@ class TaskManager : CoroutineScope {
 
             mutex.withLock {
                 // 如果任务状态为创建中，立即执行
-                if (adapter.getStatus(task) == TaskType.TASK_STATUS_CREATE) {
+                if (adapter.getStatus(task) == TaskConstant.TASK_STATUS_CREATE) {
                     executeTask(task, adapter)
                 }
 
@@ -199,7 +199,7 @@ class TaskManager : CoroutineScope {
                         val typedAdapter = adapter as TaskAdapter<T>
 
                         // 标记为删除状态
-                        typedAdapter.setStatus(typedTask, TaskType.TASK_STATUS_DELETE)
+                        typedAdapter.setStatus(typedTask, TaskConstant.TASK_STATUS_DELETE)
 
                         // 收集事件
                         events.add(TaskEvent(typedTask, typedAdapter))
@@ -230,10 +230,10 @@ class TaskManager : CoroutineScope {
                 val tasks = typedAdapter.loadAllTasks()
 
                 // 查找并执行待处理的任务
-                tasks.filter { typedAdapter.getStatus(it) == TaskType.TASK_STATUS_CREATE }
-                     .forEach { task ->
-                         executeTask(task, typedAdapter)
-                     }
+                tasks.filter { typedAdapter.getStatus(it) == TaskConstant.TASK_STATUS_CREATE }
+                    .forEach { task ->
+                        executeTask(task, typedAdapter)
+                    }
             }
 
             LogUtils.d(TAG, "已刷新所有任务")
@@ -254,7 +254,7 @@ class TaskManager : CoroutineScope {
      */
     suspend fun <T : Any> getPendingTasks(clazz: Class<T>): List<T> {
         val adapter = adapters[clazz] as? TaskAdapter<T> ?: return emptyList()
-        return adapter.loadAllTasks().filter { adapter.getStatus(it) == TaskType.TASK_STATUS_CREATE }
+        return adapter.loadAllTasks().filter { adapter.getStatus(it) == TaskConstant.TASK_STATUS_CREATE }
     }
 
     /**
@@ -267,7 +267,7 @@ class TaskManager : CoroutineScope {
     /**
      * 添加特定类型的任务监听器
      */
-    fun addTaskListener(listener: TaskEventListener, @TaskConstent.Type taskType: Int) {
+    fun addTaskListener(listener: TaskEventListener, @TaskConstant.Type taskType: Int) {
         listenerManager.addListener(listener, taskType)
     }
 
@@ -297,4 +297,4 @@ class TaskManager : CoroutineScope {
     private fun <T : Any> getAdapter(task: T): TaskAdapter<T>? {
         return adapters[task.javaClass] as? TaskAdapter<T>
     }
-} 
+}

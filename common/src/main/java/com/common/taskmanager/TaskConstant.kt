@@ -1,11 +1,28 @@
-package com.common.taskmanager.core
+package com.common.taskmanager
 
 import androidx.annotation.IntDef
 
 /**
- * 任务类型和状态定义
+ * 任务相关常量定义
  */
-object TaskType {
+object TaskConstant {
+    /**
+     * 任务类型定义
+     */
+    const val AI_TYPE_ORAL_BROADCASTING = 18  // AI口播
+    const val AI_TYPE_PICTURE_TO_VIDEO = 19   // 图生视频
+    const val AI_TYPE_TEXT_TO_IMAGE = 20      // 文生图
+
+    /**
+     * 任务类型注解
+     */
+    @IntDef(
+        AI_TYPE_ORAL_BROADCASTING,
+        AI_TYPE_PICTURE_TO_VIDEO,
+        AI_TYPE_TEXT_TO_IMAGE
+    )
+    @Retention(AnnotationRetention.SOURCE)
+    annotation class Type
 
     /**
      * 任务状态定义
@@ -28,4 +45,5 @@ object TaskType {
     )
     @Retention(AnnotationRetention.SOURCE)
     annotation class Status
-} 
+}
+
