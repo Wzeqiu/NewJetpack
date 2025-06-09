@@ -22,7 +22,7 @@ import kotlin.coroutines.CoroutineContext
  * @param T 任务对象类型
  * @param A 任务适配器类型
  */
-abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor<T, A>,
+abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor,
     CoroutineScope {
     protected val TAG = this::class.java.simpleName
 
@@ -36,22 +36,20 @@ abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor<
     // 运行中的任务列表，按任务ID索引
     private val runningJobs = ConcurrentHashMap<String, Job>()
 
-
     /**
      * 执行任务
      * 通用实现，处理基本的任务生命周期
      */
     @Suppress("UNCHECKED_CAST")
-    override suspend fun <U> execute(task: U, adapter: TaskAdapter<U>, callback: TaskCallback<U>) {
+    override suspend fun execute(task: Any, adapter: TaskAdapter<*>, callback: TaskCallback<*>) {
         // 检查任务类型是否匹配
         if (getTaskClass().isInstance(task)) {
             val typedTask = task as T
-            // 检查适配器类型是否匹配
-            if (this.adapter::class.java.isAssignableFrom(adapter::class.java)) {
-                executeTyped(typedTask, callback as TaskCallback<T>)
-            } else {
-                throw IllegalArgumentException("适配器类型不匹配: 期望 ${this.adapter::class.java.simpleName}, 实际 ${adapter::class.java.simpleName}")
-            }
+            val typedAdapter = adapter as A
+            val typedCallback = callback as TaskCallback<T>
+
+            // 执行具体业务逻辑
+            executeTyped(typedTask, typedAdapter, typedCallback)
         } else {
             throw IllegalArgumentException("任务类型不匹配: 期望 ${getTaskClass().simpleName}, 实际 ${task}")
         }
@@ -61,11 +59,11 @@ abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor<
      * 使用泛型执行任务
      * 子类可以直接调用此方法，而不需要处理泛型擦除
      */
-    override suspend fun executeTyped(task: T, callback: TaskCallback<T>) {
+    protected suspend fun executeTyped(task: T, adapter: A, callback: TaskCallback<T>) {
         val taskId = adapter.getTaskId(task)
 
         // 取消已存在的相同ID任务
-        cancelTyped(task)
+        cancelTyped(task, adapter)
 
         mutex.withLock {
             // 创建并启动任务作业
@@ -78,7 +76,7 @@ abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor<
                     callback.onStatusChanged(task)
 
                     // 执行具体的任务处理逻辑
-                    doExecute(task, callback)
+                    doExecute(task, adapter, callback)
 
                     LogUtils.d(TAG, "任务执行完成: $taskId")
                 } catch (e: CancellationException) {
@@ -87,7 +85,7 @@ abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor<
                 } catch (e: Exception) {
                     LogUtils.e(TAG, "任务执行异常: $taskId", e)
                     adapter.markFailure(task, e.message)
-                    callback.onFailure(task, e.message)
+                    callback.onStatusChanged(task)
                 } finally {
                     // 移除运行中的任务记录
                     runningJobs.remove(taskId)
@@ -100,10 +98,10 @@ abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor<
 
     /**
      * 执行具体的任务处理逻辑，由子类实现
-     * 现在使用强类型参数，子类不需要进行类型转换
      */
     protected abstract suspend fun doExecute(
         task: T,
+        adapter: A,
         callback: TaskCallback<T>
     )
 
@@ -111,9 +109,9 @@ abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor<
      * 取消任务
      */
     @Suppress("UNCHECKED_CAST")
-    override suspend fun <U> cancel(task: U, adapter: TaskAdapter<U>): Boolean {
+    override suspend fun cancel(task: Any, adapter: TaskAdapter<*>): Boolean {
         if (getTaskClass().isInstance(task)) {
-            return cancelTyped(task as T)
+            return cancelTyped(task as T, adapter as A)
         }
         return false
     }
@@ -121,7 +119,7 @@ abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor<
     /**
      * 使用泛型取消任务
      */
-    override suspend fun cancelTyped(task: T): Boolean {
+    protected suspend fun cancelTyped(task: T, adapter: A): Boolean {
         val taskId = adapter.getTaskId(task)
         return mutex.withLock {
             val job = runningJobs[taskId]
@@ -147,7 +145,7 @@ abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor<
     /**
      * 判断特定任务是否在执行
      */
-    protected fun isTaskRunning(task: T): Boolean {
+    protected fun isTaskRunning(task: T, adapter: A): Boolean {
         return isTaskRunning(adapter.getTaskId(task))
     }
 
@@ -155,7 +153,7 @@ abstract class AbstractTaskExecutor<T : Any, A : TaskAdapter<T>> : TaskExecutor<
      * 获取任务类类型
      * 默认实现，子类可以覆盖
      */
-    override fun getTaskClass(): Class<T> {
+    fun getTaskClass(): Class<T> {
         // 这里使用了泛型反射技巧，需要子类可能需要重写此方法提供准确的Class
         @Suppress("UNCHECKED_CAST")
         return javaClass.genericSuperclass.let {

@@ -11,12 +11,12 @@ import kotlinx.coroutines.isActive
 /**
  * 视频任务执行器
  * 处理视频生成相关任务
- * @param adapter 从外部注入的适配器实例，避免重复创建
  */
-class VideoTaskExecutor(override val adapter: AITaskInfoAdapter) : AbstractTaskExecutor<AITaskInfo, AITaskInfoAdapter>() {
+class VideoTaskExecutor : AbstractTaskExecutor<AITaskInfo, AITaskInfoAdapter>() {
 
     override suspend fun doExecute(
         task: AITaskInfo, 
+        adapter: AITaskInfoAdapter,
         callback: TaskCallback<AITaskInfo>
     ) {
         LogUtils.d(TAG, "开始执行视频任务: ${task.taskId}")
@@ -66,8 +66,5 @@ class VideoTaskExecutor(override val adapter: AITaskInfoAdapter) : AbstractTaskE
             TaskConstant.AI_TYPE_VIDEO_EDITING
         )
     }
-    
-    override fun getTaskClass(): Class<AITaskInfo> {
-        return AITaskInfo::class.java
-    }
-} 
+
+}

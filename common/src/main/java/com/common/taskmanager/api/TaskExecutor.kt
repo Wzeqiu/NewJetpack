@@ -8,13 +8,7 @@ import com.common.taskmanager.TaskConstant
  * @param T 任务对象类型
  * @param A 任务适配器类型
  */
-interface TaskExecutor<T : Any, A : TaskAdapter<T>> {
-
-
-    /**
-     * 任务适配器
-     */
-    val adapter: A
+interface TaskExecutor {
 
     /**
      * 执行任务
@@ -22,14 +16,8 @@ interface TaskExecutor<T : Any, A : TaskAdapter<T>> {
      * @param adapter 任务适配器
      * @param callback 任务状态回调
      */
-    suspend fun <U> execute(task: U, adapter: TaskAdapter<U>, callback: TaskCallback<U>)
+    suspend fun execute(task: Any, adapter: TaskAdapter<*>, callback: TaskCallback<*>)
 
-    /**
-     * 执行强类型任务
-     * @param task 特定类型的任务对象
-     * @param callback 任务状态回调
-     */
-    suspend fun executeTyped(task: T, callback: TaskCallback<T>)
 
     /**
      * 取消任务
@@ -37,14 +25,8 @@ interface TaskExecutor<T : Any, A : TaskAdapter<T>> {
      * @param adapter 任务适配器
      * @return 是否成功取消
      */
-    suspend fun <U> cancel(task: U, adapter: TaskAdapter<U>): Boolean
+    suspend fun cancel(task: Any, adapter: TaskAdapter<*>): Boolean
 
-    /**
-     * 取消强类型任务
-     * @param task 特定类型的任务对象
-     * @return 是否成功取消
-     */
-    suspend fun cancelTyped(task: T): Boolean
 
     /**
      * 检查任务类型是否被支持
@@ -58,12 +40,4 @@ interface TaskExecutor<T : Any, A : TaskAdapter<T>> {
      * @return 支持的任务类型列表
      */
     fun getSupportedTaskTypes(): List<Int>
-
-
-    /**
-     * 获取任务类类型
-     * @return 任务对象的Class
-     */
-    fun getTaskClass(): Class<T>
-
 }

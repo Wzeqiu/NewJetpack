@@ -11,13 +11,12 @@ import kotlinx.coroutines.isActive
 /**
  * 文生图任务执行器
  * 专门处理AITaskInfo类型的文生图任务
- * @param adapter 从外部注入的适配器实例，避免重复创建
  */
-class TextToImageExecutor(override val adapter: AITaskInfoAdapter) : AbstractTaskExecutor<AITaskInfo, AITaskInfoAdapter>() {
-    
+class TextToImageExecutor : AbstractTaskExecutor<AITaskInfo, AITaskInfoAdapter>() {
 
     override suspend fun doExecute(
         task: AITaskInfo,
+        adapter: AITaskInfoAdapter,
         callback: TaskCallback<AITaskInfo>
     ) {
         LogUtils.d(TAG, "开始执行文生图任务: ${task.taskId}")
@@ -53,8 +52,5 @@ class TextToImageExecutor(override val adapter: AITaskInfoAdapter) : AbstractTas
     override fun getSupportedTaskTypes(): List<Int> {
         return listOf(TaskConstant.AI_TYPE_TEXT_TO_IMAGE)
     }
-    
-    override fun getTaskClass(): Class<AITaskInfo> {
-        return AITaskInfo::class.java
-    }
-} 
+
+}

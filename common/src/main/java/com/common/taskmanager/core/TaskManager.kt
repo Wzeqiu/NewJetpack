@@ -50,7 +50,7 @@ class TaskManager : CoroutineScope {
     private val adapters = ConcurrentHashMap<Class<*>, TaskAdapter<*>>()
 
     // 任务类型到执行器的映射
-    private val executors = ConcurrentHashMap<Int, TaskExecutor<*, *>>()
+    private val executors = ConcurrentHashMap<Int, TaskExecutor<*>>()
 
     // 监听器管理器
     private val listenerManager = ListenerManager()
@@ -59,11 +59,12 @@ class TaskManager : CoroutineScope {
     private val mutex = Mutex()
 
     init {
+        // 注册适配器
+        registerAdapter<AITaskInfo>(AITaskInfoAdapter())
+        
         // 注册执行器
-        val adapter = AITaskInfoAdapter()
-        registerAdapter<AITaskInfo>(adapter)
-        registerExecutor(TextToImageExecutor(adapter))
-        registerExecutor(VideoTaskExecutor(adapter))
+        registerExecutor(TextToImageExecutor())
+        registerExecutor(VideoTaskExecutor())
     }
 
     /**
@@ -89,7 +90,7 @@ class TaskManager : CoroutineScope {
      * 注册任务执行器
      * @param executor 任务执行器
      */
-    fun registerExecutor(executor: TaskExecutor<*,*>) {
+    fun registerExecutor(executor: TaskExecutor<*>) {
         for (taskType in executor.getSupportedTaskTypes()) {
             executors[taskType] = executor
         }
@@ -134,7 +135,7 @@ class TaskManager : CoroutineScope {
      * @param task 任务对象
      * @param adapter 适配器
      */
-    private fun <T> executeTask(task: T, adapter: TaskAdapter<T>) {
+    private fun <T : Any> executeTask(task: T, adapter: TaskAdapter<T>) {
         val taskType = adapter.getType(task)
         val executor = executors[taskType]
 
@@ -145,7 +146,7 @@ class TaskManager : CoroutineScope {
         }
 
         launch {
-            try {
+            kotlin.runCatching {
                 executor.execute(task, adapter, object : TaskCallback<T> {
                     override fun onStatusChanged(task: T) {
                         launch {
@@ -158,9 +159,9 @@ class TaskManager : CoroutineScope {
                         }
                     }
                 })
-            } catch (e: Exception) {
-                LogUtils.e(TAG, "执行任务异常: ${adapter.getTaskId(task)}", e)
-                adapter.markFailure(task, e.message)
+            }.onFailure {
+                LogUtils.e(TAG, "执行任务异常: ${adapter.getTaskId(task)}", it)
+                adapter.markFailure(task, it.message)
             }
         }
     }
