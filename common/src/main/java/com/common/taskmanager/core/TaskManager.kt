@@ -50,7 +50,7 @@ class TaskManager : CoroutineScope {
     private val adapters = ConcurrentHashMap<Class<*>, TaskAdapter<*>>()
 
     // 任务类型到执行器的映射
-    private val executors = ConcurrentHashMap<Int, TaskExecutor<*>>()
+    private val executors = ConcurrentHashMap<Int, TaskExecutor>()
 
     // 监听器管理器
     private val listenerManager = ListenerManager()
@@ -90,7 +90,7 @@ class TaskManager : CoroutineScope {
      * 注册任务执行器
      * @param executor 任务执行器
      */
-    fun registerExecutor(executor: TaskExecutor<*>) {
+    fun registerExecutor(executor: TaskExecutor) {
         for (taskType in executor.getSupportedTaskTypes()) {
             executors[taskType] = executor
         }
