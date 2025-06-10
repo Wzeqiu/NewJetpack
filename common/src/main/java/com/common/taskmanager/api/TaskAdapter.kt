@@ -71,7 +71,7 @@ interface TaskAdapter<T> {
     /**
      * 标记任务成功完成
      */
-    fun markSuccess(task: T, result: String?)
+    fun markSuccess(task: T, result: String?=null)
 
     /**
      * 标记任务失败
