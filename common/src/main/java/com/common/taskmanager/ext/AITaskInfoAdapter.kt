@@ -41,7 +41,11 @@ class AITaskInfoAdapter : TaskAdapter<AITaskInfo> {
     override suspend fun findTask(taskId: String): AITaskInfo? {
         return DbManager.taskInfoDao.getAll().find { it.taskId == taskId }
     }
-    
+
+    override fun markDelete(task: AITaskInfo) {
+        task.status = TaskConstant.TASK_STATUS_DELETE
+    }
+
     override fun setStatus(task: AITaskInfo, status: Int) {
         task.status = status
     }

@@ -2,6 +2,7 @@ package com.common.taskmanager.api
 
 import com.common.taskmanager.TaskConstant
 
+
 /**
  * 任务适配器接口
  * 用于将不同表的任务对象适配为统一的操作接口
@@ -71,20 +72,25 @@ interface TaskAdapter<T> {
     /**
      * 标记任务成功完成
      */
-    fun markSuccess(task: T, result: String?=null)
+    fun markSuccess(task: T, result: String? = null)
+
+    /**
+     * 标记删除任务
+     */
+    fun markDelete(task: T)
 
     /**
      * 标记任务失败
      */
-    fun markFailure(task: T, reason: String?)
+    fun markFailure(task: T, reason: String? = null)
 
     /**
      * 判断任务是否为活跃状态（非终止状态）
      */
     fun isActive(task: T): Boolean {
         val status = getStatus(task)
-        return status == TaskConstant.TASK_STATUS_CREATE || 
-               status == TaskConstant.TASK_STATUS_RUNNING
+        return status == TaskConstant.TASK_STATUS_CREATE ||
+                status == TaskConstant.TASK_STATUS_RUNNING
     }
 
     /**

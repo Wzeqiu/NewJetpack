@@ -7,11 +7,10 @@ import com.common.taskmanager.api.TaskAdapter
 import com.common.taskmanager.api.TaskCallback
 import com.common.taskmanager.api.TaskEvent
 import com.common.taskmanager.api.TaskEventListener
-import com.common.taskmanager.api.TaskExecutor
 import com.common.taskmanager.ext.AITaskInfoAdapter
 import com.common.taskmanager.ext.TextToImageExecutor
-import com.common.taskmanager.ext.VideoTaskExecutor
 import com.common.taskmanager.impl.ListenerManager
+import com.mxm.douying.aigc.taskmanager.api.TaskExecutor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -35,6 +34,7 @@ class TaskManager : CoroutineScope {
         /**
          * 获取TaskManager的单例实例
          */
+        @JvmStatic
         fun getInstance(): TaskManager {
             return instance ?: synchronized(this) {
                 instance ?: TaskManager().also { instance = it }
@@ -57,16 +57,15 @@ class TaskManager : CoroutineScope {
 
     // 互斥锁
     private val mutex = Mutex()
-    
+
+
     // 全局共享回调实例
     private val sharedCallback = object : TaskCallback<Any> {
         override fun onStatusChanged(task: Any) {
             launch {
                 val adapter = getAdapter(task) ?: return@launch
-                
                 // 更新数据库
                 adapter.updateTask(task)
-
                 // 通知监听器
                 val event = TaskEvent(task, adapter)
                 listenerManager.notifyTaskStatusChanged(event)
@@ -77,10 +76,9 @@ class TaskManager : CoroutineScope {
     init {
         // 注册适配器
         registerAdapter<AITaskInfo>(AITaskInfoAdapter())
-        
+
         // 注册执行器
         registerExecutor(TextToImageExecutor())
-        registerExecutor(VideoTaskExecutor())
     }
 
     /**
@@ -107,6 +105,8 @@ class TaskManager : CoroutineScope {
      * @param executor 任务执行器
      */
     fun registerExecutor(executor: TaskExecutor) {
+        executor.setCallBack(sharedCallback)
+        getAdapter(executor.getTaskClass())?.let { executor.setAdapter(it) }
         for (taskType in executor.getSupportedTaskTypes()) {
             executors[taskType] = executor
         }
@@ -130,7 +130,7 @@ class TaskManager : CoroutineScope {
 
             mutex.withLock {
                 // 如果任务状态为创建中，立即执行
-                if (adapter.getStatus(task) == TaskConstant.TASK_STATUS_CREATE) {
+                if (adapter.isActive(task)) {
                     executeTask(task, adapter)
                 }
 
@@ -147,14 +147,6 @@ class TaskManager : CoroutineScope {
     }
 
     /**
-     * 获取共享回调实例，进行类型转换
-     */
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : Any> getCallback(): TaskCallback<T> {
-        return sharedCallback as TaskCallback<T>
-    }
-
-    /**
      * 执行任务
      * @param task 任务对象
      * @param adapter 适配器
@@ -166,19 +158,21 @@ class TaskManager : CoroutineScope {
         if (executor == null) {
             LogUtils.e(TAG, "未找到任务类型对应的执行器: $taskType")
             adapter.markFailure(task, "未找到执行器")
+            sharedCallback.onStatusChanged(task)
             return
         }
 
         launch {
             kotlin.runCatching {
-                // 使用全局共享回调对象
-                executor.execute(task, adapter,  sharedCallback)
+                executor.execute(task)
             }.onFailure {
                 LogUtils.e(TAG, "执行任务异常: ${adapter.getTaskId(task)}", it)
                 adapter.markFailure(task, it.message)
+                sharedCallback.onStatusChanged(task)
             }
         }
     }
+
 
     /**
      * 取消任务
@@ -189,11 +183,23 @@ class TaskManager : CoroutineScope {
         val executor = executors[adapter.getType(task)] ?: return false
 
         launch {
-            if (executor.cancel(task, adapter)) {
+            if (executor.cancel(task)) {
                 LogUtils.d(TAG, "任务已取消: ${adapter.getTaskId(task)}")
             }
         }
 
+        return true
+    }
+
+    /**
+     * 取消任务
+     */
+    fun cancelAllTask(): Boolean {
+        launch {
+            executors.values.forEach {
+                it.cancelAll()
+            }
+        }
         return true
     }
 
@@ -217,21 +223,15 @@ class TaskManager : CoroutineScope {
                     // 取消正在执行的任务
                     typeTasks.forEach { task ->
                         cancelTask(task as Any)
-
                         @Suppress("UNCHECKED_CAST")
-                        val typedTask = task as T
                         val typedAdapter = adapter as TaskAdapter<T>
-
                         // 标记为删除状态
-                        typedAdapter.setStatus(typedTask, TaskConstant.TASK_STATUS_DELETE)
-
+                        typedAdapter.markDelete(task)
                         // 收集事件
-                        events.add(TaskEvent(typedTask, typedAdapter))
+                        events.add(TaskEvent(task, typedAdapter))
                     }
-
                     // 从数据库中删除
-                    @Suppress("UNCHECKED_CAST")
-                    (adapter as TaskAdapter<Any>).deleteTask(typeTasks as Any)
+                    adapter.deleteTask(typeTasks)
                 }
 
                 // 通知监听器
@@ -254,7 +254,7 @@ class TaskManager : CoroutineScope {
                 val tasks = typedAdapter.loadAllTasks()
 
                 // 查找并执行待处理的任务
-                tasks.filter { typedAdapter.getStatus(it) == TaskConstant.TASK_STATUS_CREATE }
+                tasks.filter { typedAdapter.isActive(it) }
                     .forEach { task ->
                         executeTask(task, typedAdapter)
                     }
@@ -278,8 +278,7 @@ class TaskManager : CoroutineScope {
      */
     suspend fun <T : Any> getPendingTasks(clazz: Class<T>): List<T> {
         val adapter = adapters[clazz] as? TaskAdapter<T> ?: return emptyList()
-        return adapter.loadAllTasks()
-            .filter { adapter.getStatus(it) == TaskConstant.TASK_STATUS_CREATE }
+        return adapter.loadAllTasks().filter { adapter.isActive(it) }
     }
 
     /**
@@ -321,5 +320,13 @@ class TaskManager : CoroutineScope {
     @Suppress("UNCHECKED_CAST")
     private fun <T : Any> getAdapter(task: T): TaskAdapter<T>? {
         return adapters[task.javaClass] as? TaskAdapter<T>
+    }
+
+    /**
+     * 获取任务适配器
+     */
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Any> getAdapter(clazz: Class<T>): TaskAdapter<T>? {
+        return adapters[clazz] as? TaskAdapter<T>
     }
 }
