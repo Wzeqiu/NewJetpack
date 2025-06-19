@@ -75,7 +75,7 @@ class TaskManager : CoroutineScope {
 
     init {
         // 注册适配器
-        registerAdapter<AITaskInfo>(AITaskInfoAdapter())
+        registerAdapter(AITaskInfoAdapter())
 
         // 注册执行器
         registerExecutor(TextToImageExecutor())
@@ -86,7 +86,7 @@ class TaskManager : CoroutineScope {
      * @param clazz 任务类的Class对象
      * @param adapter 对应的任务适配器
      */
-    fun <T : Any> registerAdapter(clazz: Class<T>, adapter: TaskAdapter<T>) {
+    fun registerAdapter(clazz: Class<*>, adapter: TaskAdapter<*>) {
         adapters[clazz] = adapter
         LogUtils.d(TAG, "注册任务适配器: ${clazz.simpleName}")
     }
@@ -95,9 +95,9 @@ class TaskManager : CoroutineScope {
      * 通过泛型方式注册任务适配器
      * @param adapter 对应的任务适配器
      */
-    inline fun <reified T : Any> registerAdapter(adapter: TaskAdapter<T>) {
-        registerAdapter(T::class.java, adapter)
-        LogUtils.d(TAG, "通过泛型注册任务适配器: ${T::class.java.simpleName}")
+    fun registerAdapter(adapter: TaskAdapter<*>) {
+        registerAdapter(adapter.getTaskClass(), adapter)
+        LogUtils.d(TAG, "通过泛型注册任务适配器: ${adapter.getTaskClass().simpleName}")
     }
 
     /**
@@ -222,7 +222,7 @@ class TaskManager : CoroutineScope {
 
                     // 取消正在执行的任务
                     typeTasks.forEach { task ->
-                        cancelTask(task as Any)
+                        cancelTask(task)
                         @Suppress("UNCHECKED_CAST")
                         val typedAdapter = adapter as TaskAdapter<T>
                         // 标记为删除状态
