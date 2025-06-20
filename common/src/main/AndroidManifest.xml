@@ -16,5 +16,11 @@
         <activity
             android:name="com.common.ui.webView.WebViewActivity"
             android:exported="false" />
+        <activity
+            android:name="com.common.widget.video.VideoPlayerActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
     </application>
 </manifest>

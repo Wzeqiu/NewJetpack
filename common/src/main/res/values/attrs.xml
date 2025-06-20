@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 自定义视频播放器属性 -->
+    <declare-styleable name="CustomVideoPlayerView">
+        <!-- 圆角半径 -->
+        <attr name="cornerRadius" format="dimension" />
+        <!-- 调整大小模式 -->
+        <attr name="resizeMode" format="enum">
+            <enum name="fit" value="0" />
+            <enum name="fixed_width" value="1" />
+            <enum name="fixed_height" value="2" />
+            <enum name="fill" value="3" />
+            <enum name="zoom" value="4" />
+        </attr>
+        <!-- 是否显示控制器 -->
+        <attr name="showController" format="boolean" />
+        <!-- 是否自动播放 -->
+        <attr name="autoPlay" format="boolean" />
+    </declare-styleable>
+</resources> 

@@ -57,6 +57,18 @@ dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.baserecyclerviewadapterhelper4)
+    
+    // Media3 dependencies
+    api(libs.media3.exoplayer)
+    api(libs.media3.ui)
+    api(libs.media3.exoplayer.dash)
+    api(libs.media3.exoplayer.hls)
+    api(libs.media3.exoplayer.rtsp)
+    api(libs.media3.database)
+    api(libs.media3.common)
+    api(libs.media3.session)
+    api(libs.media3.datasource.okhttp)
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
