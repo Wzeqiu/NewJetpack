@@ -8,13 +8,11 @@ import com.common.taskmanager.api.TaskEvent
 import com.common.taskmanager.api.TaskEventListener
 import com.common.taskmanager.impl.ListenerManager
 import com.common.taskmanager.impl.TaskComponentFactory
-import com.mxm.douying.aigc.taskmanager.api.TaskExecutor
+import com.common.taskmanager.api.TaskExecutor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -50,9 +48,6 @@ class TaskManager private constructor() : CoroutineScope {
     // 组件工厂
     private val componentFactory = TaskComponentFactory.getInstance()
 
-    // 互斥锁
-    private val mutex = Mutex()
-
     // 全局共享回调实例
     private val sharedCallback = object : TaskCallback<Any> {
         override fun onStatusChanged(task: Any) {
@@ -83,9 +78,6 @@ class TaskManager private constructor() : CoroutineScope {
                 val adapter = componentFactory.getAdapter(task.javaClass) as? TaskAdapter<T>
                     ?: throw IllegalArgumentException("未找到任务适配器且无法创建: ${task.javaClass.simpleName}")
                 val taskId = adapter.getTaskId(task)
-                // 保存任务到数据库 - 可以在锁外执行
-                adapter.saveTask(task)
-
                 // 只锁定执行任务和发送通知的部分
                 if (adapter.isActive(task)) {
                     executeTask(task, adapter)
@@ -111,21 +103,25 @@ class TaskManager private constructor() : CoroutineScope {
      */
     private fun <T : Any> executeTask(task: T, adapter: TaskAdapter<T>) {
         val taskType = adapter.getType(task)
-        val executor = componentFactory.getExecutor(taskType)
+        val rawExecutor = componentFactory.getExecutor(taskType)
 
-        if (executor == null) {
+        if (rawExecutor == null) {
             LogUtils.e(TAG, "未找到任务类型对应的执行器且无法创建: $taskType")
-            adapter.markFailure(task, "未找到执行器")
+            adapter.markFailure(task)
             sharedCallback.onStatusChanged(task)
             return
         }
+
+        // 使用类型安全的方式执行任务
+        @Suppress("UNCHECKED_CAST")
+        val executor = rawExecutor as TaskExecutor<T>
 
         launch {
             kotlin.runCatching {
                 executor.execute(task)
             }.onFailure {
                 LogUtils.e(TAG, "执行任务异常: ${adapter.getTaskId(task)}", it)
-                adapter.markFailure(task, it.message)
+                adapter.markFailure(task)
                 sharedCallback.onStatusChanged(task)
             }
         }
@@ -140,13 +136,11 @@ class TaskManager private constructor() : CoroutineScope {
         val taskId = adapter.getTaskId(task)
         val taskType = adapter.getType(task)
 
-        // 检查任务是否处于活跃状态
-        if (!adapter.isActive(task)) {
-            LogUtils.d(TAG, "任务不在活跃状态，无需取消: $taskId")
-            return false
-        }
+        val rawExecutor = componentFactory.getExecutor(taskType) ?: return false
 
-        val executor = componentFactory.getExecutor(taskType) ?: return false
+        // 使用类型安全的方式取消任务
+        @Suppress("UNCHECKED_CAST")
+        val executor = rawExecutor as TaskExecutor<T>
 
         launch {
             if (executor.cancel(task)) {
@@ -169,55 +163,6 @@ class TaskManager private constructor() : CoroutineScope {
         return true
     }
 
-    /**
-     * 删除任务
-     * @param tasks 任务对象列表
-     */
-    fun <T : Any> deleteTasks(tasks: List<T>) {
-        if (tasks.isEmpty()) return
-
-        // 按适配器分组
-        val tasksByAdapter = tasks.groupBy { it.javaClass }
-
-        launch {
-            // 提前收集需要操作的信息，减小锁定范围
-            val taskOperations =
-                mutableListOf<Triple<TaskAdapter<*>, List<Any>, MutableList<TaskEvent<*>>>>()
-
-            // 预处理阶段，收集信息，不需要锁定
-            tasksByAdapter.forEach { (taskClass, typeTasks) ->
-                val adapter = componentFactory.getAdapter(taskClass) ?: return@forEach
-                val events = mutableListOf<TaskEvent<*>>()
-
-                // 先取消正在执行的任务，不需要锁定
-                typeTasks.forEach { task ->
-                    cancelTask(task)
-                    @Suppress("UNCHECKED_CAST")
-                    val typedAdapter = adapter as TaskAdapter<T>
-                    // 标记为删除状态
-                    typedAdapter.markDelete(task)
-                    // 收集事件
-                    events.add(TaskEvent(task, typedAdapter))
-                }
-
-                taskOperations.add(Triple(adapter, typeTasks as List<Any>, events))
-            }
-
-            // 锁定删除操作
-            mutex.withLock {
-                // 执行删除操作
-                taskOperations.forEach { (adapter, typeTasks, _) ->
-                    adapter.deleteTask(typeTasks)
-                }
-            }
-
-            // 在锁外通知监听器
-            val allEvents = taskOperations.flatMap { it.third }
-            if (allEvents.isNotEmpty()) {
-                listenerManager.notifyTasksRemoved(allEvents)
-            }
-        }
-    }
 
     /**
      * 刷新任务列表（从数据库加载所有任务）
@@ -306,7 +251,7 @@ class TaskManager private constructor() : CoroutineScope {
      * @param taskType 任务类型
      * @param executorClass 执行器类
      */
-    fun registerExecutorClass(taskType: Int, executorClass: Class<out TaskExecutor>) {
+    fun registerExecutorClass(taskType: Int, executorClass: Class<out TaskExecutor<*>>) {
         componentFactory.registerExecutorClass(taskType, executorClass)
     }
 }

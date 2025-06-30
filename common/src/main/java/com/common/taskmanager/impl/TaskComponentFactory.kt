@@ -7,10 +7,9 @@ import com.common.taskmanager.api.TaskAdapter
 import com.common.taskmanager.api.TaskCallback
 import com.common.taskmanager.ext.AITaskInfoAdapter
 import com.common.taskmanager.ext.TextToImageExecutor
-import com.mxm.douying.aigc.taskmanager.api.TaskExecutor
+import com.common.taskmanager.api.TaskExecutor
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
-import kotlin.concurrent.read
 import kotlin.concurrent.write
 
 /**
@@ -41,7 +40,7 @@ class TaskComponentFactory private constructor() {
     private val adapterLock = ReentrantReadWriteLock()
 
     // 任务类型到执行器类的映射
-    private val executorMapping = mutableMapOf<Int, Class<out TaskExecutor>>(
+    private val executorMapping = mutableMapOf<Int, Class<out TaskExecutor<*>>>(
         TaskConstant.AI_TYPE_TEXT_TO_IMAGE to TextToImageExecutor::class.java,
         // 可以添加更多的任务类型到执行器的映射
     )
@@ -53,7 +52,7 @@ class TaskComponentFactory private constructor() {
     )
 
     // 已创建的执行器实例
-    private val executors = ConcurrentHashMap<Int, TaskExecutor>()
+    private val executors = ConcurrentHashMap<Int, TaskExecutor<*>>()
 
     // 已创建的适配器实例
     private val adapters = ConcurrentHashMap<Class<*>, TaskAdapter<*>>()
@@ -74,7 +73,7 @@ class TaskComponentFactory private constructor() {
      * @param taskType 任务类型
      * @param executorClass 执行器类
      */
-    fun registerExecutorClass(taskType: Int, executorClass: Class<out TaskExecutor>) {
+    fun registerExecutorClass(taskType: Int, executorClass: Class<out TaskExecutor<*>>) {
         executorMapping[taskType] = executorClass
         LogUtils.d(TAG, "注册执行器类: ${executorClass.simpleName} 用于任务类型: $taskType")
     }
@@ -99,7 +98,7 @@ class TaskComponentFactory private constructor() {
      * @param taskType 任务类型
      * @return 执行器实例，如果不支持该类型则返回null
      */
-    fun getExecutor(taskType: Int): TaskExecutor? {
+    fun getExecutor(taskType: Int): TaskExecutor<*>? {
         // 先从缓存中查找
         val executor = executors[taskType]
         if (executor != null) {
@@ -121,11 +120,14 @@ class TaskComponentFactory private constructor() {
                     // 获取对应的适配器并设置
                     val taskClass = newExecutor.getTaskClass()
                     getAdapter(taskClass)?.let { adapter ->
-                        newExecutor.setAdapter(adapter)
+                        // 使用类型安全的方式设置适配器
+                        @Suppress("UNCHECKED_CAST")
+                        val typedExecutor = newExecutor as TaskExecutor<Any>
+                        val typedAdapter = adapter as TaskAdapter<Any>
+                        typedExecutor.setAdapter(typedAdapter)
                     }
 
                     // 将创建的执行器放入缓存
-                    executors[taskType] = newExecutor
                     LogUtils.d(
                         TAG,
                         "创建执行器: ${newExecutor.javaClass.simpleName} 用于任务类型: $taskType"
@@ -136,7 +138,6 @@ class TaskComponentFactory private constructor() {
                     null
                 }
             }
-
         }
     }
 
@@ -187,7 +188,7 @@ class TaskComponentFactory private constructor() {
     /**
      * 获取所有已创建的执行器
      */
-    fun getAllExecutors(): Collection<TaskExecutor> {
+    fun getAllExecutors(): Collection<TaskExecutor<*>> {
         return executors.values
     }
 
@@ -201,7 +202,7 @@ class TaskComponentFactory private constructor() {
     /**
      * 获取指定任务类型的执行器
      */
-    fun getExecutorForType(taskType: Int): TaskExecutor? {
+    fun getExecutorForType(taskType: Int): TaskExecutor<*>? {
         return executors[taskType]
     }
 
@@ -230,9 +231,7 @@ class TaskComponentFactory private constructor() {
      * 获取所有支持的任务类型
      */
     fun getSupportedTaskTypes(): List<Int> {
-        return executorLock.read {
-            executorMapping.keys.toList()
-        }
+        return executorMapping.keys.toList()
     }
 
     /**

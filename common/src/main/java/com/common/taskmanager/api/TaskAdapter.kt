@@ -27,37 +27,27 @@ interface TaskAdapter<T> {
     /**
      * 持久化保存任务
      */
-    suspend fun saveTask(task: T)
+     fun saveTask(task: T)
 
     /**
      * 更新任务
      */
-    suspend fun updateTask(task: T)
+     fun updateTask(task: T)
 
     /**
      * 删除任务
      */
-    suspend fun deleteTask(task: Any)
+     fun deleteTask(task: Any)
 
     /**
      * 加载所有任务
      */
-    suspend fun loadAllTasks(): List<T>
+     fun loadAllTasks(): List<T>
 
     /**
      * 查找特定ID的任务
      */
-    suspend fun findTask(taskId: String): T?
-
-    /**
-     * 设置任务状态
-     */
-    fun setStatus(task: T, @TaskConstant.Status status: Int)
-
-    /**
-     * 设置任务结果
-     */
-    fun setResult(task: T, result: String?)
+     fun findTask(taskId: String): T?
 
     /**
      * 设置任务进度
@@ -72,7 +62,7 @@ interface TaskAdapter<T> {
     /**
      * 标记任务成功完成
      */
-    fun markSuccess(task: T, result: String? = null)
+    fun markSuccess(task: T)
 
     /**
      * 标记删除任务
@@ -82,7 +72,7 @@ interface TaskAdapter<T> {
     /**
      * 标记任务失败
      */
-    fun markFailure(task: T, reason: String? = null)
+    fun markFailure(task: T)
 
     /**
      * 判断任务是否为活跃状态（非终止状态）
