@@ -66,7 +66,7 @@ class TaskManager private constructor() : CoroutineScope {
             }
         }
     }
-    
+
     init {
         // 设置组件工厂的全局回调
         componentFactory.setGlobalCallback(sharedCallback)
@@ -78,30 +78,18 @@ class TaskManager private constructor() : CoroutineScope {
      */
     fun <T : Any> addTask(task: T) {
         launch {
-            try {
+            runCatching {
                 // 获取或创建适配器
                 val adapter = componentFactory.getAdapter(task.javaClass) as? TaskAdapter<T>
                     ?: throw IllegalArgumentException("未找到任务适配器且无法创建: ${task.javaClass.simpleName}")
-                
                 val taskId = adapter.getTaskId(task)
-                
-                // 检查任务是否已存在并处于活跃状态
-                val existingTask = adapter.findTask(taskId)
-                if (existingTask != null && adapter.isActive(existingTask)) {
-                    LogUtils.w(TAG, "任务已存在并处于活跃状态，跳过添加: $taskId")
-                    return@launch
-                }
-                
-                // 保存任务到数据库
+                // 保存任务到数据库 - 可以在锁外执行
                 adapter.saveTask(task)
 
-                mutex.withLock {
-                    // 如果任务状态为活跃状态，立即执行
-                    if (adapter.isActive(task)) {
-                        executeTask(task, adapter)
-                    }
-
-                    // 通知监听器
+                // 只锁定执行任务和发送通知的部分
+                if (adapter.isActive(task)) {
+                    executeTask(task, adapter)
+                    // 通知任务添加 - 可以在锁外执行
                     val event = TaskEvent(task, adapter)
                     listenerManager.notifyTaskAdded(event)
 
@@ -110,8 +98,8 @@ class TaskManager private constructor() : CoroutineScope {
                         "任务已添加: $taskId, 类型: ${adapter.getType(task)}"
                     )
                 }
-            } catch (e: Exception) {
-                LogUtils.e(TAG, "添加任务异常", e)
+            }.onFailure {
+                LogUtils.e(TAG, "添加任务异常", it)
             }
         }
     }
@@ -151,13 +139,13 @@ class TaskManager private constructor() : CoroutineScope {
         val adapter = componentFactory.getAdapter(task.javaClass) as? TaskAdapter<T> ?: return false
         val taskId = adapter.getTaskId(task)
         val taskType = adapter.getType(task)
-        
+
         // 检查任务是否处于活跃状态
         if (!adapter.isActive(task)) {
             LogUtils.d(TAG, "任务不在活跃状态，无需取消: $taskId")
             return false
         }
-        
+
         val executor = componentFactory.getExecutor(taskType) ?: return false
 
         launch {
@@ -192,30 +180,41 @@ class TaskManager private constructor() : CoroutineScope {
         val tasksByAdapter = tasks.groupBy { it.javaClass }
 
         launch {
-            mutex.withLock {
+            // 提前收集需要操作的信息，减小锁定范围
+            val taskOperations =
+                mutableListOf<Triple<TaskAdapter<*>, List<Any>, MutableList<TaskEvent<*>>>>()
+
+            // 预处理阶段，收集信息，不需要锁定
+            tasksByAdapter.forEach { (taskClass, typeTasks) ->
+                val adapter = componentFactory.getAdapter(taskClass) ?: return@forEach
                 val events = mutableListOf<TaskEvent<*>>()
 
-                tasksByAdapter.forEach { (taskClass, typeTasks) ->
-                    val adapter = componentFactory.getAdapter(taskClass) ?: return@forEach
+                // 先取消正在执行的任务，不需要锁定
+                typeTasks.forEach { task ->
+                    cancelTask(task)
+                    @Suppress("UNCHECKED_CAST")
+                    val typedAdapter = adapter as TaskAdapter<T>
+                    // 标记为删除状态
+                    typedAdapter.markDelete(task)
+                    // 收集事件
+                    events.add(TaskEvent(task, typedAdapter))
+                }
 
-                    // 取消正在执行的任务
-                    typeTasks.forEach { task ->
-                        cancelTask(task)
-                        @Suppress("UNCHECKED_CAST")
-                        val typedAdapter = adapter as TaskAdapter<T>
-                        // 标记为删除状态
-                        typedAdapter.markDelete(task)
-                        // 收集事件
-                        events.add(TaskEvent(task, typedAdapter))
-                    }
-                    // 从数据库中删除
+                taskOperations.add(Triple(adapter, typeTasks as List<Any>, events))
+            }
+
+            // 锁定删除操作
+            mutex.withLock {
+                // 执行删除操作
+                taskOperations.forEach { (adapter, typeTasks, _) ->
                     adapter.deleteTask(typeTasks)
                 }
+            }
 
-                // 通知监听器
-                if (events.isNotEmpty()) {
-                    listenerManager.notifyTasksRemoved(events)
-                }
+            // 在锁外通知监听器
+            val allEvents = taskOperations.flatMap { it.third }
+            if (allEvents.isNotEmpty()) {
+                listenerManager.notifyTasksRemoved(allEvents)
             }
         }
     }
@@ -228,17 +227,19 @@ class TaskManager private constructor() : CoroutineScope {
             componentFactory.getAllAdapters().forEach { adapter ->
                 @Suppress("UNCHECKED_CAST")
                 val typedAdapter = adapter as TaskAdapter<Any>
-
                 val tasks = typedAdapter.loadAllTasks()
-
-                // 查找并执行待处理的任务
-                tasks.filter { typedAdapter.isActive(it) }
-                    .forEach { task ->
+                val activeTasks = tasks.filter { typedAdapter.isActive(it) }
+                if (activeTasks.isNotEmpty()) {
+                    activeTasks.forEach { task ->
                         executeTask(task, typedAdapter)
                     }
-            }
+                }
 
-            LogUtils.d(TAG, "已刷新所有任务")
+                LogUtils.d(
+                    TAG,
+                    "已刷新 ${adapter.javaClass.simpleName} 的任务：总数 ${tasks.size}，活跃 ${activeTasks.size}"
+                )
+            }
         }
     }
 
@@ -290,7 +291,7 @@ class TaskManager private constructor() : CoroutineScope {
         instance = null
         LogUtils.d(TAG, "任务管理器已销毁")
     }
-    
+
     /**
      * 注册适配器类型
      * @param taskClass 任务类
@@ -299,7 +300,7 @@ class TaskManager private constructor() : CoroutineScope {
     fun registerAdapterClass(taskClass: Class<*>, adapterClass: Class<out TaskAdapter<*>>) {
         componentFactory.registerAdapterClass(taskClass, adapterClass)
     }
-    
+
     /**
      * 注册执行器类型
      * @param taskType 任务类型

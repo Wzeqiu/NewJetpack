@@ -54,20 +54,6 @@ interface TaskExecutor {
 
 
     /**
-     * 检查任务类型是否被支持
-     * @param taskType 任务类型
-     * @return 是否支持
-     */
-    fun isSupportedTaskType(@TaskConstant.Type taskType: Int): Boolean
-
-    /**
-     * 获取执行器支持的任务类型
-     * @return 支持的任务类型列表
-     */
-    fun getSupportedTaskTypes(): List<Int>
-
-
-    /**
      * 获取任务类类型
      * 默认实现，子类可以覆盖
      */

@@ -36,13 +36,6 @@ class TextToImageExecutor : AbstractTaskExecutor<AITaskInfo, AITaskInfoAdapter>(
         LogUtils.d(TAG, "文生图任务执行成功: ${task.taskId}, 结果: $resultUrl")
     }
     
-    override fun isSupportedTaskType(taskType: Int): Boolean {
-        return taskType == TaskConstant.AI_TYPE_TEXT_TO_IMAGE
-    }
-    
-    override fun getSupportedTaskTypes(): List<Int> {
-        return listOf(TaskConstant.AI_TYPE_TEXT_TO_IMAGE)
-    }
 
     override fun getTaskClass(): Class<*> {
        return AITaskInfo::class.java
