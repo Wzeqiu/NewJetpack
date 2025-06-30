@@ -1,15 +1,13 @@
 package com.common.taskmanager.core
 
 import com.blankj.utilcode.util.LogUtils
-import com.common.db.dao.AITaskInfo
 import com.common.taskmanager.TaskConstant
 import com.common.taskmanager.api.TaskAdapter
 import com.common.taskmanager.api.TaskCallback
 import com.common.taskmanager.api.TaskEvent
 import com.common.taskmanager.api.TaskEventListener
-import com.common.taskmanager.ext.AITaskInfoAdapter
-import com.common.taskmanager.ext.TextToImageExecutor
 import com.common.taskmanager.impl.ListenerManager
+import com.common.taskmanager.impl.TaskComponentFactory
 import com.mxm.douying.aigc.taskmanager.api.TaskExecutor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,13 +16,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.CoroutineContext
 
 /**
  * 统一任务管理器
  * 支持管理不同类型的任务对象
+ * 采用懒加载方式创建适配器和执行器
  */
-class TaskManager : CoroutineScope {
+class TaskManager private constructor() : CoroutineScope {
     companion object {
         const val TAG = "TaskManager"
 
@@ -46,24 +46,20 @@ class TaskManager : CoroutineScope {
     private val supervisorJob = SupervisorJob()
     override val coroutineContext: CoroutineContext = Dispatchers.IO + supervisorJob
 
-    // 类型到适配器的映射
-    private val adapters = ConcurrentHashMap<Class<*>, TaskAdapter<*>>()
-
-    // 任务类型到执行器的映射
-    private val executors = ConcurrentHashMap<Int, TaskExecutor>()
-
     // 监听器管理器
     private val listenerManager = ListenerManager()
 
+    // 组件工厂
+    private val componentFactory = TaskComponentFactory.getInstance()
+
     // 互斥锁
     private val mutex = Mutex()
-
 
     // 全局共享回调实例
     private val sharedCallback = object : TaskCallback<Any> {
         override fun onStatusChanged(task: Any) {
             launch {
-                val adapter = getAdapter(task) ?: return@launch
+                val adapter = componentFactory.getAdapterForClass(task.javaClass) ?: return@launch
                 // 更新数据库
                 adapter.updateTask(task)
                 // 通知监听器
@@ -72,48 +68,10 @@ class TaskManager : CoroutineScope {
             }
         }
     }
-
+    
     init {
-        // 注册适配器
-        registerAdapter(AITaskInfoAdapter())
-
-        // 注册执行器
-        registerExecutor(TextToImageExecutor())
-    }
-
-    /**
-     * 注册任务适配器
-     * @param clazz 任务类的Class对象
-     * @param adapter 对应的任务适配器
-     */
-    fun registerAdapter(clazz: Class<*>, adapter: TaskAdapter<*>) {
-        adapters[clazz] = adapter
-        LogUtils.d(TAG, "注册任务适配器: ${clazz.simpleName}")
-    }
-
-    /**
-     * 通过泛型方式注册任务适配器
-     * @param adapter 对应的任务适配器
-     */
-    fun registerAdapter(adapter: TaskAdapter<*>) {
-        registerAdapter(adapter.getTaskClass(), adapter)
-        LogUtils.d(TAG, "通过泛型注册任务适配器: ${adapter.getTaskClass().simpleName}")
-    }
-
-    /**
-     * 注册任务执行器
-     * @param executor 任务执行器
-     */
-    fun registerExecutor(executor: TaskExecutor) {
-        executor.setCallBack(sharedCallback)
-        getAdapter(executor.getTaskClass())?.let { executor.setAdapter(it) }
-        for (taskType in executor.getSupportedTaskTypes()) {
-            executors[taskType] = executor
-        }
-        LogUtils.d(
-            TAG,
-            "注册任务执行器: ${executor.javaClass.simpleName}, 支持任务类型: ${executor.getSupportedTaskTypes()}"
-        )
+        // 设置组件工厂的全局回调
+        componentFactory.setGlobalCallback(sharedCallback)
     }
 
     /**
@@ -121,27 +79,41 @@ class TaskManager : CoroutineScope {
      * @param task 任务对象
      */
     fun <T : Any> addTask(task: T) {
-        val adapter = getAdapter(task)
-            ?: throw IllegalArgumentException("未找到任务适配器: ${task.javaClass.simpleName}")
-
         launch {
-            // 保存任务到数据库
-            adapter.saveTask(task)
-
-            mutex.withLock {
-                // 如果任务状态为创建中，立即执行
-                if (adapter.isActive(task)) {
-                    executeTask(task, adapter)
+            try {
+                // 获取或创建适配器
+                val adapter = componentFactory.getAdapter(task.javaClass) as? TaskAdapter<T>
+                    ?: throw IllegalArgumentException("未找到任务适配器且无法创建: ${task.javaClass.simpleName}")
+                
+                val taskId = adapter.getTaskId(task)
+                
+                // 检查任务是否已存在并处于活跃状态
+                val existingTask = adapter.findTask(taskId)
+                if (existingTask != null && adapter.isActive(existingTask)) {
+                    LogUtils.w(TAG, "任务已存在并处于活跃状态，跳过添加: $taskId")
+                    return@launch
                 }
+                
+                // 保存任务到数据库
+                adapter.saveTask(task)
 
-                // 通知监听器
-                val event = TaskEvent(task, adapter)
-                listenerManager.notifyTaskAdded(event)
+                mutex.withLock {
+                    // 如果任务状态为活跃状态，立即执行
+                    if (adapter.isActive(task)) {
+                        executeTask(task, adapter)
+                    }
 
-                LogUtils.d(
-                    TAG,
-                    "任务已添加: ${adapter.getTaskId(task)}, 类型: ${adapter.getType(task)}"
-                )
+                    // 通知监听器
+                    val event = TaskEvent(task, adapter)
+                    listenerManager.notifyTaskAdded(event)
+
+                    LogUtils.d(
+                        TAG,
+                        "任务已添加: $taskId, 类型: ${adapter.getType(task)}"
+                    )
+                }
+            } catch (e: Exception) {
+                LogUtils.e(TAG, "添加任务异常", e)
             }
         }
     }
@@ -153,10 +125,10 @@ class TaskManager : CoroutineScope {
      */
     private fun <T : Any> executeTask(task: T, adapter: TaskAdapter<T>) {
         val taskType = adapter.getType(task)
-        val executor = executors[taskType]
+        val executor = componentFactory.getExecutor(taskType)
 
         if (executor == null) {
-            LogUtils.e(TAG, "未找到任务类型对应的执行器: $taskType")
+            LogUtils.e(TAG, "未找到任务类型对应的执行器且无法创建: $taskType")
             adapter.markFailure(task, "未找到执行器")
             sharedCallback.onStatusChanged(task)
             return
@@ -173,18 +145,26 @@ class TaskManager : CoroutineScope {
         }
     }
 
-
     /**
      * 取消任务
      * @param task 任务对象
      */
     fun <T : Any> cancelTask(task: T): Boolean {
-        val adapter = getAdapter(task) ?: return false
-        val executor = executors[adapter.getType(task)] ?: return false
+        val adapter = componentFactory.getAdapter(task.javaClass) as? TaskAdapter<T> ?: return false
+        val taskId = adapter.getTaskId(task)
+        val taskType = adapter.getType(task)
+        
+        // 检查任务是否处于活跃状态
+        if (!adapter.isActive(task)) {
+            LogUtils.d(TAG, "任务不在活跃状态，无需取消: $taskId")
+            return false
+        }
+        
+        val executor = componentFactory.getExecutor(taskType) ?: return false
 
         launch {
             if (executor.cancel(task)) {
-                LogUtils.d(TAG, "任务已取消: ${adapter.getTaskId(task)}")
+                LogUtils.d(TAG, "任务已取消: $taskId")
             }
         }
 
@@ -192,11 +172,11 @@ class TaskManager : CoroutineScope {
     }
 
     /**
-     * 取消任务
+     * 取消所有任务
      */
     fun cancelAllTask(): Boolean {
         launch {
-            executors.values.forEach {
+            componentFactory.getAllExecutors().forEach {
                 it.cancelAll()
             }
         }
@@ -218,7 +198,7 @@ class TaskManager : CoroutineScope {
                 val events = mutableListOf<TaskEvent<*>>()
 
                 tasksByAdapter.forEach { (taskClass, typeTasks) ->
-                    val adapter = adapters[taskClass] ?: return@forEach
+                    val adapter = componentFactory.getAdapter(taskClass) ?: return@forEach
 
                     // 取消正在执行的任务
                     typeTasks.forEach { task ->
@@ -247,7 +227,7 @@ class TaskManager : CoroutineScope {
      */
     fun refreshTasks() {
         launch {
-            adapters.forEach { (_, adapter) ->
+            componentFactory.getAllAdapters().forEach { adapter ->
                 @Suppress("UNCHECKED_CAST")
                 val typedAdapter = adapter as TaskAdapter<Any>
 
@@ -269,7 +249,7 @@ class TaskManager : CoroutineScope {
      * @param taskType 任务类型
      */
     suspend fun <T : Any> getTasksByType(clazz: Class<T>, taskType: Int): List<T> {
-        val adapter = adapters[clazz] as? TaskAdapter<T> ?: return emptyList()
+        val adapter = componentFactory.getAdapter(clazz) ?: return emptyList()
         return adapter.loadAllTasks().filter { adapter.getType(it) == taskType }
     }
 
@@ -277,7 +257,7 @@ class TaskManager : CoroutineScope {
      * 获取待处理任务列表
      */
     suspend fun <T : Any> getPendingTasks(clazz: Class<T>): List<T> {
-        val adapter = adapters[clazz] as? TaskAdapter<T> ?: return emptyList()
+        val adapter = componentFactory.getAdapter(clazz) ?: return emptyList()
         return adapter.loadAllTasks().filter { adapter.isActive(it) }
     }
 
@@ -307,26 +287,27 @@ class TaskManager : CoroutineScope {
      */
     fun destroy() {
         supervisorJob.cancel()
-        executors.clear()
-        adapters.clear()
         listenerManager.clear()
+        componentFactory.clearCache()
         instance = null
         LogUtils.d(TAG, "任务管理器已销毁")
     }
-
+    
     /**
-     * 获取任务适配器
+     * 注册适配器类型
+     * @param taskClass 任务类
+     * @param adapterClass 适配器类
      */
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : Any> getAdapter(task: T): TaskAdapter<T>? {
-        return adapters[task.javaClass] as? TaskAdapter<T>
+    fun registerAdapterClass(taskClass: Class<*>, adapterClass: Class<out TaskAdapter<*>>) {
+        componentFactory.registerAdapterClass(taskClass, adapterClass)
     }
-
+    
     /**
-     * 获取任务适配器
+     * 注册执行器类型
+     * @param taskType 任务类型
+     * @param executorClass 执行器类
      */
-    @Suppress("UNCHECKED_CAST")
-    private fun <T : Any> getAdapter(clazz: Class<T>): TaskAdapter<T>? {
-        return adapters[clazz] as? TaskAdapter<T>
+    fun registerExecutorClass(taskType: Int, executorClass: Class<out TaskExecutor>) {
+        componentFactory.registerExecutorClass(taskType, executorClass)
     }
 }
