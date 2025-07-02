@@ -2,17 +2,14 @@ package com.common.media
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.common.common.R
 import com.common.common.databinding.ActivityMediaManageBinding
 import com.common.kt.activity.requestPermission
 import com.common.kt.activity.toIntent
-import com.common.kt.getCompressImagePath
+import com.common.kt.setTitleBarContent
 import com.common.kt.viewBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,13 +32,10 @@ class MediaManageActivity : AppCompatActivity() {
             MediaConfig.MEDIA_TYPE_AUDIO -> "选择音频"
             else -> "选择媒体"
         }
-
-        // 如果是多选模式，显示完成按钮
-        supportActionBar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            if (mediaConfig.enableMultiSelect) {
-                setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
-            }
+        setTitleBarContent(title, if (mediaConfig.enableMultiSelect) "完成" else "", {
+            finish()
+        }) {
+            finishWithMultiSelectResult()
         }
 
         viewBinding.apply {
@@ -122,7 +116,7 @@ class MediaManageActivity : AppCompatActivity() {
                 return@launch
             }
             if (mediaConfig.mediaType == MediaConfig.MEDIA_TYPE_IMAGE) {
-                getCompressImagePath(mediaInfo.path)?.let {
+                mediaViewModel.getCompressImagePath(mediaInfo.path)?.let {
                     mediaInfo.path = it
                     setResult(RESULT_OK, intent.putExtra(RESULT_DATA, mediaInfo))
                     finish()
@@ -157,7 +151,7 @@ class MediaManageActivity : AppCompatActivity() {
                     // 图片需要压缩
                     val compressedList = mutableListOf<MediaInfo>()
                     for (mediaInfo in selectedMediaList) {
-                        val compressedPath = getCompressImagePath(mediaInfo.path)
+                        val compressedPath = mediaViewModel.getCompressImagePath(mediaInfo.path)
                         if (compressedPath != null) {
                             // 创建新的MediaInfo对象，保留原始对象不变
                             compressedList.add(mediaInfo.copy(path = compressedPath))
@@ -177,38 +171,11 @@ class MediaManageActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // 如果是多选模式，添加完成按钮
-        if (mediaConfig.enableMultiSelect) {
-            menu.add(Menu.NONE, MENU_ID_DONE, Menu.NONE, "完成")
-                .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-        }
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                // 返回按钮
-                finish()
-                true
-            }
-
-            MENU_ID_DONE -> {
-                // 完成按钮
-                finishWithMultiSelectResult()
-                true
-            }
-
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
 
     companion object {
         const val BUNDLE_DATA = "BUNDLE_DATA"
         const val RESULT_DATA = "RESULT_DATA"
         const val RESULT_LIST_DATA = "RESULT_LIST_DATA"
-        private const val MENU_ID_DONE = 1001
 
         fun getIntent(
             activity: AppCompatActivity,

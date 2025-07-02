@@ -1,7 +1,9 @@
 package com.common.kt
 
 import android.annotation.SuppressLint
+import android.graphics.Outline
 import android.view.View
+import android.view.ViewOutlineProvider
 import com.common.common.R
 
 
@@ -47,4 +49,20 @@ fun View.addTouchScaleAnimation(scale: Float = 0.9f, duration: Long = 100): View
         false
     }
     return this
+}
+
+
+/**
+ * View 设置圆角
+ */
+fun View.setRoundRadius(radius: Float) {
+    post {
+        outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) {
+                outline.setRoundRect(0, 0, view.width, view.height, radius)
+            }
+        }
+        setClipToOutline(true)
+    }
+
 }
