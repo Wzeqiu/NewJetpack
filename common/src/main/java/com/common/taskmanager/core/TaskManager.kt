@@ -6,9 +6,9 @@ import com.common.taskmanager.api.TaskAdapter
 import com.common.taskmanager.api.TaskCallback
 import com.common.taskmanager.api.TaskEvent
 import com.common.taskmanager.api.TaskEventListener
+import com.common.taskmanager.api.TaskExecutor
 import com.common.taskmanager.impl.ListenerManager
 import com.common.taskmanager.impl.TaskComponentFactory
-import com.mxm.douying.aigc.taskmanager.api.TaskExecutor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -123,11 +123,11 @@ class TaskManager private constructor() : CoroutineScope {
      */
     private fun <T : Any> executeTask(task: T, adapter: TaskAdapter<T>) {
         val taskType = adapter.getType(task)
-        val executor = componentFactory.getExecutor(taskType)
+        val executor = componentFactory.getExecutor(taskType) as? TaskExecutor<T>
 
         if (executor == null) {
             LogUtils.e(TAG, "未找到任务类型对应的执行器且无法创建: $taskType")
-            adapter.markFailure(task, "未找到执行器")
+            adapter.markFailure(task)
             sharedCallback.onStatusChanged(task)
             return
         }
@@ -137,7 +137,7 @@ class TaskManager private constructor() : CoroutineScope {
                 executor.execute(task)
             }.onFailure {
                 LogUtils.e(TAG, "执行任务异常: ${adapter.getTaskId(task)}", it)
-                adapter.markFailure(task, it.message)
+                adapter.markFailure(task,)
                 sharedCallback.onStatusChanged(task)
             }
         }
@@ -158,7 +158,7 @@ class TaskManager private constructor() : CoroutineScope {
             return false
         }
         
-        val executor = componentFactory.getExecutor(taskType) ?: return false
+        val executor = componentFactory.getExecutor(taskType) as? TaskExecutor<T> ?: return false
 
         launch {
             if (executor.cancel(task)) {
@@ -305,7 +305,7 @@ class TaskManager private constructor() : CoroutineScope {
      * @param taskType 任务类型
      * @param executorClass 执行器类
      */
-    fun registerExecutorClass(taskType: Int, executorClass: Class<out TaskExecutor>) {
+    fun registerExecutorClass(taskType: Int, executorClass: Class<out TaskExecutor<*>>) {
         componentFactory.registerExecutorClass(taskType, executorClass)
     }
 }
