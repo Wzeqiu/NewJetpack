@@ -33,9 +33,9 @@ object TaskConstant {
      */
     const val TASK_STATUS_DELETE = -1  // 已删除
     const val TASK_STATUS_CREATE = 0   // 创建
-    const val TASK_STATUS_SUCCESS = 1  // 成功
-    const val TASK_STATUS_FAILURE = 2  // 失败
-    const val TASK_STATUS_RUNNING = 3  // 运行中
+    const val TASK_STATUS_RUNNING = 1  // 运行中
+    const val TASK_STATUS_SUCCESS = 2  // 成功
+    const val TASK_STATUS_FAILURE = 3  // 失败
 
     /**
      * 任务状态注解
