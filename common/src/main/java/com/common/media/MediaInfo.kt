@@ -1,4 +1,4 @@
-package com.common.ui.media
+package com.common.media
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

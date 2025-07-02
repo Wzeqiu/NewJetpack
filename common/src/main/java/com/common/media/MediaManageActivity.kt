@@ -1,6 +1,5 @@
-package com.common.ui.media
+package com.common.media
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -30,14 +29,14 @@ class MediaManageActivity : AppCompatActivity() {
             val mediaInfo = adapter.getItem(position) ?: return@setOnItemClickListener
             lifecycleScope.launch(Dispatchers.IO) {
                 if (mediaConfig.originalMedia){
-                    setResult(Activity.RESULT_OK, intent.putExtra(RESULT_DATA, mediaInfo))
+                    setResult(RESULT_OK, intent.putExtra(RESULT_DATA, mediaInfo))
                     finish()
                     return@launch
                 }
                 if (mediaConfig.mediaType == MediaConfig.MEDIA_TYPE_IMAGE){
                     getCompressImagePath(mediaInfo.path)?.let {
                         mediaInfo.path=it
-                        setResult(Activity.RESULT_OK, intent.putExtra(RESULT_DATA, mediaInfo))
+                        setResult(RESULT_OK, intent.putExtra(RESULT_DATA, mediaInfo))
                         finish()
                     } ?: run {
                         // TODO: 重新选择

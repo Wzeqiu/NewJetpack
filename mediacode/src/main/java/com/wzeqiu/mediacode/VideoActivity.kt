@@ -7,17 +7,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.common.kt.viewBinding
-import com.common.ui.media.MediaConfig
-import com.common.ui.media.MediaConfig.Companion.MEDIA_TYPE_VIDEO
-import com.common.ui.media.MediaInfo
-import com.common.ui.media.MediaManageActivity
+import com.common.media.MediaConfig
+import com.common.media.MediaConfig.Companion.MEDIA_TYPE_VIDEO
+import com.common.media.MediaInfo
+import com.common.media.MediaManageActivity
 import com.wzeqiu.mediacode.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
 
-class MainActivity : AppCompatActivity() {
+class VideoActivity : AppCompatActivity() {
     private val viewBinding by viewBinding<ActivityMainBinding>()
     private val videoDecoder by lazy { VideoDecoder() }
 
@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
             addVideo.setOnClickListener {
                 videoSelect.launch(
                     MediaManageActivity.getIntent(
-                        this@MainActivity, MediaConfig(MEDIA_TYPE_VIDEO)
+                        this@VideoActivity, MediaConfig(MEDIA_TYPE_VIDEO)
                     )
                 )
             }

@@ -9,8 +9,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NewJetpack">
         <activity
-            android:name=".MainActivity"
-            android:exported="true" >
+            android:name=".VideoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HomeActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
