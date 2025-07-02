@@ -1,31 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.common.media.MediaManageActivity">
+
+    <include layout="@layout/layout_common_titlebar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMedia"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_weight="1"
         android:overScrollMode="never"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        app:spanCount="3"
+        app:layout_constraintBottom_toTopOf="@+id/tvSelectedCount"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/tvSelectedCount" />
-        
+        app:spanCount="3" />
+
     <TextView
         android:id="@+id/tvSelectedCount"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:background="#F5F5F5"
         android:gravity="center"
-        android:textSize="16sp"
-        android:textColor="#333333"
-        android:visibility="gone"
         android:text="已选择: 0/9"
+        android:textColor="#333333"
+        android:textSize="16sp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rl_title_bar"
+    android:layout_width="match_parent"
+    android:layout_height="48dp">
+
+    <ImageView
+        android:id="@+id/titleBarBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:padding="12dp"
+        android:contentDescription="返回" />
+
+    <TextView
+        android:id="@+id/titleBarTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:textColor="#333333"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="标题" />
+
+    <TextView
+        android:id="@+id/titleBaRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"
+        android:textColor="#666666"
+        android:textSize="16sp"
+        android:visibility="gone"
+        tools:text="更多"
+        tools:visibility="visible" />
+
+</RelativeLayout> 
