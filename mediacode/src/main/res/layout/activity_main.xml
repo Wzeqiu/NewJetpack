@@ -24,18 +24,44 @@
         android:layout_height="wrap_content"
         android:text="开始" />
 
-    <Button
-        android:id="@+id/addVideo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="添加视频" />
-
-    <TextView
-        android:id="@+id/tvResult"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textSize="14sp"
-        android:padding="8dp" />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/addVideo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="添加视频" />
+
+        <Button
+            android:id="@+id/addImages"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="多选图片" />
+
+        <Button
+            android:id="@+id/addVideos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="多选视频" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/tvResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"
+            android:textSize="14sp" />
+    </ScrollView>
 
 </LinearLayout>

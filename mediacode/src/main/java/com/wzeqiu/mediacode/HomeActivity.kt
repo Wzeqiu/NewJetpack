@@ -22,7 +22,7 @@ class HomeActivity : AppCompatActivity() {
             btImag.setOnClickListener {
                 this@HomeActivity.launch(
                     MediaManageActivity.getIntent(
-                        this@HomeActivity, MediaConfig(MEDIA_TYPE_IMAGE)
+                        this@HomeActivity, MediaConfig(MEDIA_TYPE_IMAGE, enableMultiSelect = true, maxSelectCount = 3)
                     )
                 )
             }

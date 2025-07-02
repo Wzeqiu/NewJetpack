@@ -31,7 +31,7 @@ class MediaManagerViewModel(application: Application) : AndroidViewModel(applica
     private fun getImageSource(scope: CoroutineScope): List<MediaInfo> {
         val images = mutableListOf<MediaInfo>()
         val queryImage = arrayOf(MediaStore.Images.Media.DISPLAY_NAME, MediaStore.Images.Media.DATA)
-        val selection = MediaStore.Images.Media.MIME_TYPE + "=?"
+        val selection = MediaStore.Images.Media.MIME_TYPE + " IN (?, ?)"
         val selectionArgs = arrayOf("image/jpeg", "image/png")
         getApplication<Application>().contentResolver.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -41,11 +41,11 @@ class MediaManagerViewModel(application: Application) : AndroidViewModel(applica
             if (it.moveToFirst()) {
                 val nameIndex = it.getColumnIndex(MediaStore.Images.ImageColumns.DISPLAY_NAME)
                 val pathIndex = it.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
-                while (it.moveToNext() && scope.isActive) {
+                do {
                     val name = it.getString(nameIndex)
                     val path = it.getString(pathIndex)
                     images.add(MediaInfo(name, path, mediaType = MediaConfig.MEDIA_TYPE_IMAGE))
-                }
+                } while (it.moveToNext() && scope.isActive)
             }
         }
         return images
@@ -74,13 +74,13 @@ class MediaManagerViewModel(application: Application) : AndroidViewModel(applica
                 val pathIndex = it.getColumnIndex(MediaStore.Video.VideoColumns.DATA)
                 val durationIndex = it.getColumnIndex(MediaStore.Video.VideoColumns.DURATION)
                 val sizeIndex = it.getColumnIndex(MediaStore.Video.VideoColumns.SIZE)
-                while (it.moveToNext() && scope.isActive) {
+                do {
                     val name = it.getString(nameIndex)
                     val path = it.getString(pathIndex)
                     val duration = it.getLong(durationIndex)
                     val size = it.getLong(sizeIndex)
                     videos.add(MediaInfo(name, path, size, duration, MediaConfig.MEDIA_TYPE_VIDEO))
-                }
+                } while (it.moveToNext() && scope.isActive)
             }
         }
         return videos

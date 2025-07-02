@@ -9,9 +9,23 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMedia"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:overScrollMode="never"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        app:spanCount="3" />
+        app:spanCount="3"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/tvSelectedCount" />
+        
+    <TextView
+        android:id="@+id/tvSelectedCount"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="#F5F5F5"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:textColor="#333333"
+        android:visibility="gone"
+        android:text="已选择: 0/9"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

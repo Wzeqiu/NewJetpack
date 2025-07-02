@@ -90,21 +90,18 @@ fun LifecycleOwner.getActivity(): FragmentActivity {
 }
 
 
-
-
-
 fun AppCompatActivity.requestPermission(
     vararg permission: String = arrayOf(READ_MEDIA_IMAGES, READ_MEDIA_VIDEO),
-    action: () -> Unit = {}
+    action: (Boolean) -> Unit = {}
 ) {
     XXPermissions.with(this).permission(permission)
-        .request { p0, p1 -> if (p1) action() }
+        .request { p0, p1 -> if (p1) action(p1) }
 }
 
 fun Fragment.requestPermission(
     vararg permission: String = arrayOf(READ_MEDIA_IMAGES, READ_MEDIA_VIDEO),
-    action: () -> Unit = {}
+    action: (Boolean) -> Unit = {}
 ) {
     XXPermissions.with(this).permission(permission)
-        .request { p0, p1 -> if (p1) action() }
+        .request { p0, p1 -> if (p1) action(p1) }
 }
