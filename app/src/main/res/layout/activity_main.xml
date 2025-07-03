@@ -8,31 +8,43 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
+
     <com.common.widget.view.CountdownView
         android:id="@+id/countdownView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:countdown_segmentColor="#E91E63"
-        app:countdown_textColor="@android:color/white"
         app:countdown_separatorColor="@android:color/black"
-        app:layout_constraintTop_toBottomOf="@+id/button3"
+        app:countdown_textColor="@android:color/white"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/button3" />
+
+    <com.common.widget.view.StrokeTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="描边文字示例描边文字示例描边文字示"
+        android:textSize="10dp"
+        android:textColor="#00FFFF"
+        app:strokeColor="#FF0000"
+        app:strokeWidth="2dp" />
 
     <TextView
         android:id="@+id/tvTextStr"
         android:layout_width="wrap_content"
-        android:textSize="20sp"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:textSize="20sp" />
+
     <ImageView
         android:id="@+id/ivImageView"
         android:layout_width="100dp"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content" />
+
     <ImageView
         android:id="@+id/iv"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:background="@mipmap/ic_launcher"/>
+        android:background="@mipmap/ic_launcher" />
 
     <Button
         android:id="@+id/textView"
@@ -50,23 +62,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="打开引导页示例" />
+
     <Button
         android:id="@+id/btn_shape_demo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="shapeDemo" />
+
     <Button
         android:id="@+id/btn_tablayout_demo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="TabLayout" />
+
     <Button
         android:id="@+id/btn_webView_demo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="WebView" />
-
-
 
 
 </LinearLayout>

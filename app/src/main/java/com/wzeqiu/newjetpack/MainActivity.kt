@@ -71,11 +71,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         // 将所有示例组合在一起展示
         binding.tvTextStr.text = buildSpannedString {
             append(gradientOnly)
-            append("\n\n")
+            append("\n")
             append(clickOnly)
-            append("\n\n")
+            append("\n")
             append(combined)
-            append("\n\n")
+            append("\n")
             append(specialCombined)
         }
 

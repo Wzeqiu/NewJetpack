@@ -17,4 +17,14 @@
         <!-- 是否自动播放 -->
         <attr name="autoPlay" format="boolean" />
     </declare-styleable>
+
+    <!-- 描边文字属性 -->
+    <declare-styleable name="StrokeTextView">
+        <!-- 描边颜色 -->
+        <attr name="strokeColor" format="color" />
+        <!-- 描边宽度 -->
+        <attr name="strokeWidth" format="dimension" />
+        <!-- 字间距 -->
+        <attr name="textLetterSpacing" format="float" />
+    </declare-styleable>
 </resources> 
