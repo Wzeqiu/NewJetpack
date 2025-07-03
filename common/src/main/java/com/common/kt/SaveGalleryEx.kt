@@ -27,7 +27,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 
-
+//现在添加水印工具类，要求支持视频、图片添加水印，能够设置水印位置
 /**
  * 批量保存到相册
  */

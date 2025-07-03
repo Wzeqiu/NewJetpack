@@ -68,7 +68,8 @@ dependencies {
     api(libs.media3.common)
     api(libs.media3.session)
     api(libs.media3.datasource.okhttp)
-    
+    api(libs.androidx.media3.transformer)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

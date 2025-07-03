@@ -1,22 +1,28 @@
 package com.wzeqiu.mediacode
 
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.widget.SeekBar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.util.UnstableApi
+import com.blankj.utilcode.util.Utils
+import com.common.kt.saveToAlbum
 import com.common.kt.viewBinding
 import com.common.media.MediaConfig
 import com.common.media.MediaConfig.Companion.MEDIA_TYPE_VIDEO
 import com.common.media.MediaInfo
 import com.common.media.MediaManageActivity
+import com.common.utils.WatermarkUtils
 import com.wzeqiu.mediacode.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
 
+@UnstableApi
 class VideoActivity : AppCompatActivity() {
     private val viewBinding by viewBinding<ActivityMainBinding>()
     private val videoDecoder by lazy { VideoDecoder() }
@@ -28,9 +34,14 @@ class VideoActivity : AppCompatActivity() {
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
                         val newFile = File(cacheDir, "${System.currentTimeMillis()}.mp4")
+                        val newFile1 = File(cacheDir, "${System.currentTimeMillis()}.mp4")
                         Log.d("MainActivity", "开始裁剪视频: ${info.path} -> ${newFile.absolutePath}")
                         Log.d("MainActivity", "视频时长: ${info.duration}毫秒")
-                        
+
+                        WatermarkUtils.addWatermarkToVideo(this@VideoActivity, File(info.path), "https://cdn.chengdujingqian.com/media/default/2507/03/1751546285_XME5TipQHS.png",newFile1)
+                        saveToAlbum(mutableListOf(newFile1.absolutePath))
+
+
                         // 使用MediaClipper裁剪视频
                         val clipper = MediaClipper()
                         // 裁剪视频的前5秒，如果视频不足5秒则裁剪全部
