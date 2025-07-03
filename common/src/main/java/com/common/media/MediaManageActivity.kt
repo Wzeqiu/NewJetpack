@@ -9,8 +9,10 @@ import androidx.lifecycle.lifecycleScope
 import com.common.common.databinding.ActivityMediaManageBinding
 import com.common.kt.activity.requestPermission
 import com.common.kt.activity.toIntent
+import com.common.kt.dp2px
 import com.common.kt.setTitleBarContent
 import com.common.kt.viewBinding
+import com.common.widget.SpacingItemDecoration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -33,12 +35,13 @@ class MediaManageActivity : AppCompatActivity() {
             else -> "选择媒体"
         }
         setTitleBarContent(title, if (mediaConfig.enableMultiSelect) "完成" else "", {
-            finish()
-        }) {
             finishWithMultiSelectResult()
+        }) {
+            finish()
         }
 
         viewBinding.apply {
+            rvMedia.addItemDecoration(SpacingItemDecoration(4.dp2px))
             rvMedia.adapter = mediaAdapter
 
             // 显示已选数量的提示

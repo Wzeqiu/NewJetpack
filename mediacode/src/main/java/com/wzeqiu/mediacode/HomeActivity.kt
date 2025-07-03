@@ -28,9 +28,12 @@ class HomeActivity : AppCompatActivity() {
                         this@HomeActivity, MediaConfig(MEDIA_TYPE_IMAGE, originalMedia = false, enableMultiSelect = true, maxSelectCount = 3)
                     )
                 ){
-                    val data = it.data?.getParcelableArrayListExtra<MediaInfo>(MediaManageActivity.RESULT_LIST_DATA) as List<MediaInfo>
-                    Log.e("AAAAAA","data==="+data.size)
-                    saveToAlbum(data.map { it.path })
+                    if (it.resultCode == RESULT_OK){
+                        val data = it.data?.getParcelableArrayListExtra<MediaInfo>(MediaManageActivity.RESULT_LIST_DATA) as List<MediaInfo>
+                        Log.e("AAAAAA","data==="+data.size)
+                        saveToAlbum(data.map { it.path })
+                    }
+
                 }
             }
         }
