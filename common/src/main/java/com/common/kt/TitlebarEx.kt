@@ -4,6 +4,7 @@ import android.app.Activity
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import com.common.common.R
 
 
@@ -30,12 +31,13 @@ fun Activity.setTitleContent(title: CharSequence, color: Int = 0) {
 }
 
 fun Activity.setTitleRightContent(
-    title: CharSequence,
+    content: CharSequence,
     color: Int = 0,
     action: View.() -> Unit = {}
 ) {
     findViewById<TextView>(R.id.titleBaRight)?.apply {
-        text = title
+        isVisible=true
+        text = content
         if (color > 0) {
             setTextColor(color)
         }

@@ -3,7 +3,10 @@ package com.wzeqiu.mediacode
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.ActivityUtils.startActivity
+import com.blankj.utilcode.util.Utils
+import com.bumptech.glide.util.Util
 import com.common.kt.activity.launch
 import com.common.kt.saveToAlbum
 import com.common.kt.viewBinding
@@ -11,7 +14,11 @@ import com.common.media.MediaConfig
 import com.common.media.MediaConfig.Companion.MEDIA_TYPE_IMAGE
 import com.common.media.MediaInfo
 import com.common.media.MediaManageActivity
+import com.common.utils.WatermarkUtils
 import com.wzeqiu.mediacode.databinding.ActivityHomeBinding
+import kotlinx.coroutines.launch
+import java.io.File
+import kotlin.random.Random
 
 class HomeActivity : AppCompatActivity() {
     private val viewBinding by viewBinding<ActivityHomeBinding>()
@@ -31,7 +38,18 @@ class HomeActivity : AppCompatActivity() {
                     if (it.resultCode == RESULT_OK){
                         val data = it.data?.getParcelableArrayListExtra<MediaInfo>(MediaManageActivity.RESULT_LIST_DATA) as List<MediaInfo>
                         Log.e("AAAAAA","data==="+data.size)
-                        saveToAlbum(data.map { it.path })
+
+                        lifecycleScope.launch{
+                            data.forEach {
+                                Log.e("AAAAAA","path==="+it.path)
+                                val newFile1 = File(cacheDir, "${System.currentTimeMillis()}_${Random.nextInt(1000000)}.jpg")
+                                WatermarkUtils.addWatermarkToImage(Utils.getApp(), File(it.path), "https://cdn.chengdujingqian.com/media/default/2507/03/1751546285_XME5TipQHS.png",newFile1)
+                                Log.e("AAAAAA","newFile1 path==="+newFile1.absolutePath)
+                                saveToAlbum(mutableListOf(newFile1.absolutePath))
+                            }
+                        }
+
+
                     }
 
                 }

@@ -38,6 +38,7 @@ activityKtx = "1.10.1"
 fragmentKtx = "1.8.8"
 baserecyclerviewadapterhelper4 = "4.1.6"
 media3 = "1.7.1"
+immersionbar = "3.2.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -82,6 +83,8 @@ media3-session = { group = "androidx.media3", name = "media3-session", version.r
 media3-database = { group = "androidx.media3", name = "media3-database", version.ref = "media3" }
 media3-datasource-okhttp = { group = "androidx.media3", name = "media3-datasource-okhttp", version.ref = "media3" }
 androidx-media3-transformer = { group = "androidx.media3", name = "media3-transformer", version.ref = "media3" }
+immersionbar = { group = "com.geyifeng.immersionbar", name = "immersionbar", version.ref = "immersionbar" }
+immersionbar-ktx = { group = "com.geyifeng.immersionbar", name = "immersionbar-ktx", version.ref = "immersionbar" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

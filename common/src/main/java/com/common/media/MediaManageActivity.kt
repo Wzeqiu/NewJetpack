@@ -13,6 +13,7 @@ import com.common.kt.dp2px
 import com.common.kt.setTitleBarContent
 import com.common.kt.viewBinding
 import com.common.widget.SpacingItemDecoration
+import com.gyf.immersionbar.ktx.immersionBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -27,20 +28,22 @@ class MediaManageActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 设置标题
-        title = when (mediaConfig.mediaType) {
-            MediaConfig.MEDIA_TYPE_IMAGE -> "选择图片"
-            MediaConfig.MEDIA_TYPE_VIDEO -> "选择视频"
-            MediaConfig.MEDIA_TYPE_AUDIO -> "选择音频"
-            else -> "选择媒体"
-        }
-        setTitleBarContent(title, if (mediaConfig.enableMultiSelect) "完成" else "", {
-            finishWithMultiSelectResult()
-        }) {
-            finish()
-        }
-
         viewBinding.apply {
+            immersionBar { titleBarMarginTop(title.rlTitleBar) }
+            // 设置标题
+            val title = when (mediaConfig.mediaType) {
+                MediaConfig.MEDIA_TYPE_IMAGE -> "选择图片"
+                MediaConfig.MEDIA_TYPE_VIDEO -> "选择视频"
+                MediaConfig.MEDIA_TYPE_AUDIO -> "选择音频"
+                else -> "选择媒体"
+            }
+            setTitleBarContent(title, if (mediaConfig.enableMultiSelect) "完成" else "", {
+                finishWithMultiSelectResult()
+            }) {
+                finish()
+            }
+
+
             rvMedia.addItemDecoration(SpacingItemDecoration(4.dp2px))
             rvMedia.adapter = mediaAdapter
 

@@ -69,6 +69,8 @@ dependencies {
     api(libs.media3.session)
     api(libs.media3.datasource.okhttp)
     api(libs.androidx.media3.transformer)
+    api(libs.immersionbar)
+    api(libs.immersionbar.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

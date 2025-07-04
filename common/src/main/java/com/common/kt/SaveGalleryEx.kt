@@ -73,10 +73,7 @@ private fun Context.saveImageToGallery(path: String) {
             put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
             put(MediaStore.Images.Media.MIME_TYPE, mime)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(
-                    MediaStore.Images.Media.RELATIVE_PATH,
-                    "${Environment.DIRECTORY_PICTURES}/${Utils.getApp().getString(R.string.app_name)}/"
-                )
+                put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/${Utils.getApp().getString(R.string.app_name)}/")
                 put(MediaStore.Images.Media.IS_PENDING, 1)
             }
         }

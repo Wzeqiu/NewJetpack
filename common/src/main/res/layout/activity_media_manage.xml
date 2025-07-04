@@ -7,7 +7,9 @@
     android:orientation="vertical"
     tools:context="com.common.media.MediaManageActivity">
 
-    <include layout="@layout/layout_common_titlebar" />
+    <include
+        android:id="@+id/title"
+        layout="@layout/layout_common_titlebar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMedia"
