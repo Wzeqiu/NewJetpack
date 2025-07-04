@@ -17,7 +17,9 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.OverlaySettings
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.BitmapOverlay
+import androidx.media3.effect.OverlayEffect
 import androidx.media3.effect.StaticOverlaySettings
+import androidx.media3.effect.TextureOverlay
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.EditedMediaItem
 import androidx.media3.transformer.ExportException
@@ -34,6 +36,8 @@ import java.io.File
 import java.io.FileOutputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import androidx.media3.common.Effect
+import androidx.media3.transformer.Effects
 
 /**
  * 水印工具类，支持为图片和视频添加水印
@@ -41,7 +45,7 @@ import kotlin.coroutines.resumeWithException
 object WatermarkUtils {
 
     private const val TAG = "WatermarkUtils"
-    
+
     // 水印位图缓存
     private val watermarkBitmapCache = mutableMapOf<String, Bitmap>()
 
@@ -129,7 +133,7 @@ object WatermarkUtils {
 
         // 释放资源
         scaledWatermark.recycle()
-        
+
         return result
     }
 
@@ -279,7 +283,7 @@ object WatermarkUtils {
     private suspend fun getOrLoadWatermarkBitmap(context: Context, url: String): Bitmap = withContext(Dispatchers.IO) {
         // 检查缓存中是否有该水印
         watermarkBitmapCache[url]?.let { return@withContext it }
-        
+
         // 加载并缓存水印
         val bitmap = loadBitmapFromUrl(context, url)
         watermarkBitmapCache[url] = bitmap
@@ -303,7 +307,7 @@ object WatermarkUtils {
                         continuation.resumeWithException(Exception("Failed to load watermark image from URL: $url"))
                     }
                 })
-            
+
             continuation.invokeOnCancellation {
                 // 取消Glide的加载
                 Glide.with(context).clear(null)
@@ -316,7 +320,7 @@ object WatermarkUtils {
     }
 
     /**
-     * 给视频添加水印 (使用Media3 Transformer)
+     * 给视频添加水印 (使用Media3 Transformer) - 兼容新版本API
      *
      * @param context 上下文
      * @param inputVideoFile 输入视频文件
@@ -344,31 +348,31 @@ object WatermarkUtils {
         try {
             // 创建输出目录
             FileUtils.createOrExistsDir(outputVideoFile.parentFile)
-            
+
             // 获取视频尺寸
             val retriever = MediaMetadataRetriever()
             retriever.setDataSource(inputVideoFile.absolutePath)
             val videoWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toInt() ?: 1920
             val videoHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toInt() ?: 1080
             retriever.release()
-            
+
             // 计算水印大小
             val watermarkWidth = (videoWidth * sizeFactor).toInt()
             val watermarkHeight = (watermarkBitmap.height * watermarkWidth / watermarkBitmap.width)
-            
+
             // 调整水印大小
             val scaledWatermarkBitmap = Bitmap.createScaledBitmap(
                 watermarkBitmap,
-                watermarkWidth, 
+                watermarkWidth,
                 watermarkHeight.toInt(),
                 true
             )
-            
+
             // 计算水印位置
             val margin = (videoWidth * marginFactor).toInt()
             val xFraction: Float
             val yFraction: Float
-            
+
             when (position) {
                 WatermarkPosition.LEFT_TOP -> {
                     xFraction = margin.toFloat() / videoWidth
@@ -391,62 +395,75 @@ object WatermarkUtils {
                     yFraction = 0.5f - (watermarkHeight.toInt() / 2f) / videoHeight
                 }
             }
-            
+
+            // 将 [0, 1] 范围的比例坐标转换为 [-1, 1] 范围的NDC（归一化设备坐标）
+            val xNdc = xFraction * 2 - 1
+            val yNdc = yFraction * 2 - 1
+
             // 创建水印覆盖效果
             val overlaySettings = StaticOverlaySettings.Builder()
                 .setAlphaScale(alpha / 255f)  // 设置透明度
-                .setScale(watermarkWidth.toFloat() / videoWidth,watermarkHeight.toFloat() / videoHeight)
-                .setOverlayFrameAnchor(xFraction, yFraction)
+                // 使用 setVideoFrameAnchor 并传入NDC坐标来设置水印在视频帧上的位置
+                .setBackgroundFrameAnchor(xFraction, yFraction)
                 .build()
-                
-            val bitmapOverlay = BitmapOverlay.createStaticBitmapOverlay(scaledWatermarkBitmap, overlaySettings)
+
+            val bitmapOverlay: TextureOverlay = BitmapOverlay.createStaticBitmapOverlay(scaledWatermarkBitmap, overlaySettings)
             
-//            // 创建Media3转换任务
-//            val result = suspendCancellableCoroutine<Boolean> { continuation ->
-//                val mediaItem = MediaItem.fromUri(inputVideoFile.toURI().toString())
-//                val editedMediaItem = EditedMediaItem.Builder(mediaItem)
-//                    .setEffects(EditedMediaItem.Effects(emptyList(), listOf(bitmapOverlay)))
-//                    .build()
-//
-//                val composition = Composition.Builder(editedMediaItem).build()
-//
-//                val transformer = Transformer.Builder(context)
-//                    .setVideoMimeType(MediaFormat.MIMETYPE_VIDEO_H264)
-//                    .build()
-//
-//                transformer.start(
-//                    composition,
-//                    outputVideoFile.absolutePath,
-//                    object : Transformer.Listener {
-//                        override fun onCompleted(composition: Composition, exportResult: ExportResult) {
-//                            Log.d(TAG, "视频水印添加成功")
-//                            continuation.resume(true)
-//                        }
-//
-//                        override fun onError(
-//                            composition: Composition,
-//                            exportResult: ExportResult,
-//                            exception: ExportException
-//                        ) {
-//                            Log.e(TAG, "视频水印添加失败", exception)
-//                            if (continuation.isActive) {
-//                                continuation.resume(false)
-//                            }
-//                        }
-//                    }
-//                )
-//
-//                continuation.invokeOnCancellation {
-//                    transformer.cancel()
-//                }
-//            }
-//
-//            // 根据参数决定是否释放缩放后的水印资源
-//            if (recycleWatermark) {
-//                scaledWatermarkBitmap.recycle()
-//            }
+            // 创建Media3转换任务
+            val result = withContext(Dispatchers.Main) {
+                suspendCancellableCoroutine<Boolean> { continuation ->
+                    val listener = object : Transformer.Listener {
+                        override fun onCompleted(composition: Composition, exportResult: ExportResult) {
+                            Log.d(TAG, "视频水印添加成功")
+                            if (continuation.isActive) continuation.resume(true)
+                        }
+
+                        override fun onError(
+                            composition: Composition,
+                            exportResult: ExportResult,
+                            exception: ExportException
+                        ) {
+                            Log.e(TAG, "视频水印添加失败", exception)
+                            if (continuation.isActive) {
+                                continuation.resume(false)
+                            }
+                        }
+                    }
+
+                    val transformer = Transformer.Builder(context)
+                        .setVideoMimeType(MediaFormat.MIMETYPE_VIDEO_AVC)
+                        .addListener(listener)
+                        .build()
+
+                    val mediaItem = MediaItem.fromUri(inputVideoFile.toURI().toString())
+
+                    // 1. 将 TextureOverlay 包装在 OverlayEffect 中，这才是正确的 Effect 类型
+                    val overlayEffect = OverlayEffect(listOf(bitmapOverlay))
+                    val videoEffects: List<Effect> = listOf(overlayEffect)
+                    val effects = Effects(
+                        /* audioProcessors= */ emptyList(),
+                        /* videoEffects= */ videoEffects
+                    )
+
+                    val editedMediaItem = EditedMediaItem.Builder(mediaItem)
+                        .setEffects(effects)
+                        .build()
+
+                    // 2. 对于单个视频，直接开始转换EditedMediaItem
+                    transformer.start(editedMediaItem, outputVideoFile.absolutePath)
+
+                    continuation.invokeOnCancellation {
+                        transformer.cancel()
+                    }
+                }
+            }
             
-            return@withContext true
+            // 根据参数决定是否释放缩放后的水印资源
+            if (recycleWatermark) {
+                scaledWatermarkBitmap.recycle()
+            }
+            
+            return@withContext result
         } catch (e: Exception) {
             Log.e(TAG, "添加视频水印失败", e)
             return@withContext false
