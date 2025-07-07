@@ -38,6 +38,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import androidx.media3.common.Effect
 import androidx.media3.transformer.Effects
+import androidx.core.graphics.scale
 
 /**
  * 水印工具类，支持为图片和视频添加水印
@@ -342,7 +343,7 @@ object WatermarkUtils {
         position: WatermarkPosition = WatermarkPosition.RIGHT_BOTTOM,
         sizeFactor: Float = 0.1f,
         marginFactor: Float = 0.03f,
-        alpha: Int = 255,
+        alpha: Float = 1f,
         recycleWatermark: Boolean = false // 默认不回收水印，适合批量处理
     ): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -361,50 +362,58 @@ object WatermarkUtils {
             val watermarkHeight = (watermarkBitmap.height * watermarkWidth / watermarkBitmap.width)
 
             // 调整水印大小
-            val scaledWatermarkBitmap = Bitmap.createScaledBitmap(
-                watermarkBitmap,
-                watermarkWidth,
-                watermarkHeight.toInt(),
-                true
-            )
+            val scaledWatermarkBitmap = watermarkBitmap.scale(watermarkWidth, watermarkHeight,true)
 
             // 计算水印位置
-            val margin = (videoWidth * marginFactor).toInt()
-            val xFraction: Float
-            val yFraction: Float
+            val bFrameX: Float
+            val bFrameY: Float
+
+            // 计算水印偏移
+            val oFrameX: Float
+            val oFrameY: Float
 
             when (position) {
                 WatermarkPosition.LEFT_TOP -> {
-                    xFraction = margin.toFloat() / videoWidth
-                    yFraction = margin.toFloat() / videoHeight
+                    bFrameX =-1f+marginFactor
+                    bFrameY = 1f-marginFactor
+                    oFrameX=-1f
+                    oFrameY=1f
                 }
                 WatermarkPosition.RIGHT_TOP -> {
-                    xFraction = (videoWidth - watermarkWidth - margin).toFloat() / videoWidth
-                    yFraction = margin.toFloat() / videoHeight
+                    bFrameX =1f-marginFactor
+                    bFrameY = 1f-marginFactor
+
+                    oFrameX=1f
+                    oFrameY=1f
                 }
                 WatermarkPosition.LEFT_BOTTOM -> {
-                    xFraction = margin.toFloat() / videoWidth
-                    yFraction = (videoHeight - watermarkHeight.toInt() - margin).toFloat() / videoHeight
+                    bFrameX =-1f+marginFactor
+                    bFrameY = -1f+marginFactor
+
+                    oFrameX=-1f
+                    oFrameY=-1f
                 }
                 WatermarkPosition.RIGHT_BOTTOM -> {
-                    xFraction = (videoWidth - watermarkWidth - margin).toFloat() / videoWidth
-                    yFraction = (videoHeight - watermarkHeight.toInt() - margin).toFloat() / videoHeight
+                    bFrameX = 1f-marginFactor
+                    bFrameY = -1f+marginFactor
+                    oFrameX=1f
+                    oFrameY=-1f
                 }
                 WatermarkPosition.CENTER -> {
-                    xFraction = 0.5f - (watermarkWidth / 2f) / videoWidth
-                    yFraction = 0.5f - (watermarkHeight.toInt() / 2f) / videoHeight
+                    bFrameX = 0f
+                    bFrameY =0f
+                    oFrameX=0f
+                    oFrameY=0f
                 }
             }
 
             // 将 [0, 1] 范围的比例坐标转换为 [-1, 1] 范围的NDC（归一化设备坐标）
-            val xNdc = xFraction * 2 - 1
-            val yNdc = yFraction * 2 - 1
 
             // 创建水印覆盖效果
             val overlaySettings = StaticOverlaySettings.Builder()
-                .setAlphaScale(alpha / 255f)  // 设置透明度
-                // 使用 setVideoFrameAnchor 并传入NDC坐标来设置水印在视频帧上的位置
-                .setBackgroundFrameAnchor(xFraction, yFraction)
+                .setAlphaScale(alpha )  // 设置透明度
+                .setBackgroundFrameAnchor(bFrameX, bFrameY) // 使用根据position计算的NDC坐标
+                .setOverlayFrameAnchor(oFrameX, oFrameY)
                 .build()
 
             val bitmapOverlay: TextureOverlay = BitmapOverlay.createStaticBitmapOverlay(scaledWatermarkBitmap, overlaySettings)
@@ -492,7 +501,7 @@ object WatermarkUtils {
         position: WatermarkPosition = WatermarkPosition.RIGHT_BOTTOM,
         sizeFactor: Float = 0.1f,
         marginFactor: Float = 0.03f,
-        alpha: Int = 255
+        alpha: Float = 1f
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             // 获取或加载水印位图
@@ -538,7 +547,7 @@ object WatermarkUtils {
         position: WatermarkPosition = WatermarkPosition.RIGHT_BOTTOM,
         sizeFactor: Float = 0.1f,
         marginFactor: Float = 0.03f,
-        alpha: Int = 255
+        alpha: Float = 1f
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             // 使用文件路径作为缓存key

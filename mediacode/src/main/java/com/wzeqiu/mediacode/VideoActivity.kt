@@ -35,10 +35,20 @@ class VideoActivity : AppCompatActivity() {
                     try {
                         val newFile = File(cacheDir, "${System.currentTimeMillis()}.mp4")
                         val newFile1 = File(cacheDir, "${System.currentTimeMillis()}.mp4")
-                        Log.d("MainActivity", "开始裁剪视频: ${info.path} -> ${newFile.absolutePath}")
+                        Log.d(
+                            "MainActivity",
+                            "开始裁剪视频: ${info.path} -> ${newFile.absolutePath}"
+                        )
                         Log.d("MainActivity", "视频时长: ${info.duration}毫秒")
 
-                        WatermarkUtils.addWatermarkToVideo(this@VideoActivity, File(info.path), "https://cdn.chengdujingqian.com/media/default/2507/03/1751546285_XME5TipQHS.png",newFile1)
+                        WatermarkUtils.addWatermarkToVideo(
+                            this@VideoActivity,
+                            File(info.path),
+                            "https://cdn.chengdujingqian.com/media/default/2507/03/1751546285_XME5TipQHS.png",
+                            newFile1,
+                            WatermarkUtils.WatermarkPosition.RIGHT_BOTTOM
+                            ,0.2f,0.1f,0.5f
+                        )
                         saveToAlbum(mutableListOf(newFile1.absolutePath))
 
 
@@ -48,9 +58,9 @@ class VideoActivity : AppCompatActivity() {
                         val endTimeMs = minOf(5000, info.duration.toLong())
                         val startTimeUs = 0L // 从开始位置裁剪
                         val endTimeUs = endTimeMs * 1000 // 转换为微秒
-                        
+
                         clipper.clip(info.path, newFile.absolutePath, startTimeUs, endTimeUs)
-                        
+
                         runOnUiThread {
                             viewBinding.tvResult.text = "裁剪完成: ${newFile.absolutePath}"
                         }
