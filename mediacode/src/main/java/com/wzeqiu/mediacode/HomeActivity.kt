@@ -1,12 +1,11 @@
 package com.wzeqiu.mediacode
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.blankj.utilcode.util.ActivityUtils.startActivity
 import com.blankj.utilcode.util.Utils
-import com.bumptech.glide.util.Util
 import com.common.kt.activity.launch
 import com.common.kt.saveToAlbum
 import com.common.kt.viewBinding
@@ -15,7 +14,6 @@ import com.common.media.MediaConfig.Companion.MEDIA_TYPE_IMAGE
 import com.common.media.MediaInfo
 import com.common.media.MediaManageActivity
 import com.common.utils.WatermarkUtils
-import com.common.utils.WatermarkUtils.WatermarkPosition
 import com.wzeqiu.mediacode.databinding.ActivityHomeBinding
 import kotlinx.coroutines.launch
 import java.io.File
@@ -28,8 +26,14 @@ class HomeActivity : AppCompatActivity() {
         setContentView(viewBinding.root)
         viewBinding.apply {
             btVideo.setOnClickListener {
-                startActivity(VideoActivity::class.java)
+                startActivity(Intent(this@HomeActivity, VideoActivity::class.java))
             }
+            
+            // 添加跳转到音视频处理示例Activity的按钮点击事件
+            btMediaProcessor.setOnClickListener {
+                startActivity(Intent(this@HomeActivity, MediaProcessorSampleActivity::class.java))
+            }
+            
             btImag.setOnClickListener {
                 this@HomeActivity.launch(
                     MediaManageActivity.getIntent(
