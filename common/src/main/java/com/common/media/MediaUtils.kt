@@ -19,6 +19,7 @@ import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.Transformer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -137,6 +138,12 @@ object MediaUtils {
             val finalEndTimeMs =
                 if (endTimeMs <= 0 || endTimeMs > durationMs) durationMs else endTimeMs
 
+
+            val countDownLatch = CountDownLatch(1)
+            var exportSuccess = false
+            var errorMessage = ""
+
+
             val mediaItem = MediaItem.Builder()
                 .setUri(Uri.fromFile(sourceFile))
                 .setClippingConfiguration(
@@ -152,30 +159,31 @@ object MediaUtils {
                 .setRemoveVideo(false)
                 .setFlattenForSlowMotion(false)
                 .build()
+            CoroutineScope(Dispatchers.Main).launch {
+                // 创建转换器
+                val transformer = Transformer.Builder(context).build()
 
-            // 创建转换器
-            val transformer = Transformer.Builder(context).build()
-            val countDownLatch = CountDownLatch(1)
-            var exportSuccess = false
-            var errorMessage = ""
+                transformer.addListener(object : Transformer.Listener {
+                    override fun onCompleted(composition: Composition, result: ExportResult) {
+                        exportSuccess = true
+                        countDownLatch.countDown()
+                    }
 
-            transformer.addListener(object : Transformer.Listener {
-                override fun onCompleted(composition: Composition, result: ExportResult) {
-                    exportSuccess = true
-                    countDownLatch.countDown()
-                }
+                    override fun onError(
+                        composition: Composition,
+                        result: ExportResult,
+                        exception: ExportException
+                    ) {
+                        errorMessage = "导出失败: ${exception.message}"
+                        countDownLatch.countDown()
+                    }
+                })
 
-                override fun onError(
-                    composition: Composition,
-                    result: ExportResult,
-                    exception: ExportException
-                ) {
-                    errorMessage = "导出失败: ${exception.message}"
-                    countDownLatch.countDown()
-                }
-            })
-            // 执行导出
-            transformer.start(clippedMediaItem, outputFilePath)
+
+                // 执行导出
+                transformer.start(clippedMediaItem, outputFilePath)
+            }
+
             // 等待导出完成
             countDownLatch.await()
 
