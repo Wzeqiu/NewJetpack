@@ -7,13 +7,14 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
 import androidx.annotation.OptIn
+import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.effect.Presentation
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.EditedMediaItem
-import androidx.media3.transformer.EditedMediaItemSequence
-import androidx.media3.transformer.EncoderSelector
+import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.TransformationRequest
@@ -281,35 +282,6 @@ object MediaUtils {
     }
 
     /**
-     * 修改音视频文件名
-     * @param filePath 原文件路径
-     * @param newName 新文件名（不包含路径和扩展名）
-     * @return 修改后的文件路径，如果修改失败则返回原路径
-     */
-    fun renameMediaFile(filePath: String, newName: String): String = runCatching {
-        val file = File(filePath).takeIf { it.exists() } ?: return@runCatching filePath
-
-        val extension = file.extension
-        val parentPath = file.parent ?: return@runCatching filePath
-        val newFile = File(parentPath, "$newName.$extension")
-
-        // 如果新文件已存在，则返回原路径
-        if (newFile.exists()) {
-            return@runCatching filePath
-        }
-
-        // 重命名文件
-        if (file.renameTo(newFile)) {
-            newFile.absolutePath
-        } else {
-            filePath
-        }
-    }.getOrElse { e ->
-        Log.e(TAG, "重命名文件时出错: ${e.message}")
-        filePath
-    }
-
-    /**
      * 获取媒体文件时长（毫秒）
      * @param filePath 媒体文件路径
      * @return 媒体时长，如果获取失败则返回0
@@ -344,6 +316,90 @@ object MediaUtils {
             Pair(0, 0)
         }
 
+
+    /**
+     * 修改视频分辨率
+     * @param context 上下文
+     * @param sourceFilePath 源文件路径
+     * @param outputFilePath 输出文件路径
+     * @param width 目标宽度
+     * @param height 目标高度
+     * @param callback 结果回调
+     */
+    @OptIn(UnstableApi::class)
+    fun changeVideoResolution(
+        context: Context,
+        sourceFilePath: String,
+        outputFilePath: String,
+        width: Int,
+        height: Int,
+        callback: (success: Boolean, message: String) -> Unit
+    ) {
+        runCatching {
+            val sourceFile = File(sourceFilePath).apply {
+                if (!exists()) {
+                    return callback(false, "源文件不存在")
+                }
+            }
+
+            // 创建输出文件目录
+            File(outputFilePath).apply {
+                parentFile?.takeIf { !it.exists() }?.mkdirs()
+                if (exists()) delete() // 如果输出文件已存在，则删除
+            }
+
+            val mediaItem = MediaItem.fromUri(Uri.fromFile(sourceFile))
+
+            val videoEffects: List<Effect> = listOf(
+                Presentation.createForHeight(height)
+            )
+            val effects = Effects(listOf(/* audioProcessors */), videoEffects)
+
+            val editedMediaItem = EditedMediaItem.Builder(mediaItem)
+                .setEffects(effects)
+                .build()
+
+            val countDownLatch = CountDownLatch(1)
+            var exportSuccess = false
+            var errorMessage = ""
+
+            CoroutineScope(Dispatchers.Main).launch {
+                val transformer = Transformer.Builder(context)
+                    .setVideoMimeType(MimeTypes.VIDEO_H264)
+                    .setAudioMimeType(MimeTypes.AUDIO_AAC)
+                    .addListener(object : Transformer.Listener {
+                        override fun onCompleted(composition: Composition, result: ExportResult) {
+                            exportSuccess = true
+                            countDownLatch.countDown()
+                        }
+
+                        override fun onError(
+                            composition: Composition,
+                            result: ExportResult,
+                            exception: ExportException
+                        ) {
+                            errorMessage = "转换失败: ${exception.message}"
+                            countDownLatch.countDown()
+                        }
+                    })
+                    .build()
+                transformer.start(editedMediaItem, outputFilePath)
+            }
+
+
+            // 等待导出完成
+            countDownLatch.await()
+
+            if (exportSuccess) {
+                callback(true, "分辨率修改成功")
+            } else {
+                callback(false, errorMessage.ifEmpty { "分辨率修改失败" })
+            }
+        }.onFailure { e ->
+            Log.e(TAG, "修改分辨率时出错: ${e.message}")
+            callback(false, "修改分辨率出错: ${e.message}")
+        }
+    }
 
     /**
      * 获取视频关键帧的时间点列表（毫秒）

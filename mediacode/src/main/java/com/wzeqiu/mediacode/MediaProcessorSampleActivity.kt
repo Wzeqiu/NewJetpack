@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -72,6 +73,7 @@ class MediaProcessorSampleActivity : AppCompatActivity() {
         // 只有视频可以提取音频和裁剪
         btnExtractAudio.isEnabled = mediaInfo.isVideo()
         btnTrimVideo.isEnabled = mediaInfo.isVideo()
+        findViewById<Button>(R.id.btn_change_resolution).isEnabled = mediaInfo.isVideo()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,10 +87,13 @@ class MediaProcessorSampleActivity : AppCompatActivity() {
         val btnExtractAudio = findViewById<Button>(R.id.btn_extract_audio)
         val btnTrimVideo = findViewById<Button>(R.id.btn_trim_video)
         val btnGetVideoInfo = findViewById<Button>(R.id.btn_get_video_info)
+        val btnChangeResolution = findViewById<Button>(R.id.btn_change_resolution)
+
 
         // 初始状态下，一些按钮应该被禁用
         btnExtractAudio.isEnabled = false
         btnTrimVideo.isEnabled = false
+        btnChangeResolution.isEnabled = false
 
         // 初始化媒体处理器
         mediaProcessor = MediaProcessor.getInstance(this)
@@ -112,6 +117,10 @@ class MediaProcessorSampleActivity : AppCompatActivity() {
 
         btnGetVideoInfo.setOnClickListener {
             getMediaInfo()
+        }
+
+        btnChangeResolution.setOnClickListener {
+            changeVideoResolution()
         }
     }
 
@@ -233,6 +242,55 @@ class MediaProcessorSampleActivity : AppCompatActivity() {
                 Toast.makeText(
                     this@MediaProcessorSampleActivity,
                     "裁剪视频失败",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun changeVideoResolution() {
+        val mediaInfo = selectedMediaInfo ?: run {
+            Toast.makeText(this, "请先选择视频", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (!mediaInfo.isVideo()) {
+            Toast.makeText(this, "请选择视频文件", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val width = findViewById<EditText>(R.id.et_width).text.toString().toIntOrNull()
+        val height = findViewById<EditText>(R.id.et_height).text.toString().toIntOrNull()
+
+        if (width == null || height == null || width <= 0 || height <= 0) {
+            Toast.makeText(this, "请输入有效的宽高", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            tvStatus.text = "正在修改分辨率..."
+            runCatching {
+                val fileName = "resolution_changed_${System.currentTimeMillis()}.mp4"
+                val outputFile = File(cacheDir, fileName)
+
+                withContext(Dispatchers.IO) {
+                    mediaProcessor.changeVideoResolution(
+                        mediaInfo.path,
+                        outputFile.absolutePath,
+                        width,
+                        height
+                    )
+                }
+                this@MediaProcessorSampleActivity.saveToAlbum(mutableListOf(outputFile.absolutePath))
+                tvStatus.text = "分辨率修改成功: ${outputFile.name}"
+                Toast.makeText(this@MediaProcessorSampleActivity, "分辨率修改成功", Toast.LENGTH_SHORT)
+                    .show()
+            }.onFailure { e ->
+                Log.e(TAG, "修改分辨率失败", e)
+                tvStatus.text = "修改分辨率失败: ${e.message}"
+                Toast.makeText(
+                    this@MediaProcessorSampleActivity,
+                    "修改分辨率失败",
                     Toast.LENGTH_SHORT
                 ).show()
             }

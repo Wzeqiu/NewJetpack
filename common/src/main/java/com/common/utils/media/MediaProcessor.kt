@@ -15,7 +15,7 @@ class MediaProcessor private constructor(private val context: Context) {
 
     companion object {
         @Volatile
-        private var instance: MediaProcessor?=null
+        private var instance: MediaProcessor? = null
 
         /**
          * 获取媒体处理器实例
@@ -134,19 +134,42 @@ class MediaProcessor private constructor(private val context: Context) {
         }
     }
 
+
     /**
-     * 重命名媒体文件
-     * @param filePath 原文件路径
-     * @param newName 新文件名（不包含路径和扩展名）
-     * @return 修改后的文件路径
+     * 修改视频分辨率
+     * @param videoPath 源视频文件路径
+     * @param outputPath 输出视频文件路径
+     * @param width 新视频宽度
+     * @param height 新视频高度
      */
-    suspend fun renameMediaFile(filePath: String, newName: String): String =
-        suspendCancellableCoroutine { continuation ->
-            val newPath = MediaUtils.renameMediaFile(filePath, newName)
+    suspend fun changeVideoResolution(
+        videoPath: String,
+        outputPath: String,
+        width: Int,
+        height: Int
+    ): Boolean = suspendCancellableCoroutine { continuation ->
+        MediaUtils.changeVideoResolution(
+            context, videoPath, outputPath, width, height
+        ) { success, message ->
             if (continuation.isActive) {
-                continuation.resume(newPath)
+                if (success) {
+                    continuation.resume(true)
+                } else {
+                    File(outputPath).apply {
+                        if (exists()) delete()
+                    }
+                    continuation.resumeWithException(Exception(message))
+                }
             }
         }
+        continuation.invokeOnCancellation {
+            // 处理协程取消的情况
+            File(outputPath).apply {
+                if (exists()) delete()
+            }
+        }
+    }
+
 
     /**
      * 获取媒体文件时长（毫秒）

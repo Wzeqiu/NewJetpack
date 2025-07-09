@@ -47,6 +47,34 @@
         android:text="获取媒体信息"
         android:layout_marginBottom="8dp" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/et_width"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="宽"
+            android:inputType="number" />
+
+        <EditText
+            android:id="@+id/et_height"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="高"
+            android:inputType="number" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_change_resolution"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="修改分辨率" />
+
     <Button
         android:id="@+id/btn_extract_audio"
         android:layout_width="match_parent"
