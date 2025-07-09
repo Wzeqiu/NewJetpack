@@ -21,6 +21,7 @@ import androidx.media3.effect.TextureOverlay
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.Transformer
@@ -165,7 +166,7 @@ class VideoEditorViewModel : ViewModel() {
             player?.release()
             
             // 创建ExoPlayer实例
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Main) {
                 val context = com.blankj.utilcode.util.Utils.getApp()
                 player = ExoPlayer.Builder(context).build().apply {
                     // 设置媒体源
@@ -504,6 +505,7 @@ class VideoEditorViewModel : ViewModel() {
                 
                 // 应用所有效果
                 if (effects.isNotEmpty()) {
+                    val effects = Effects(listOf(/* audioProcessors */), effects)
                     editedMediaItemBuilder.setEffects(effects)
                 }
                 
@@ -986,67 +988,67 @@ class VideoEditorViewModel : ViewModel() {
         val videoHeight = mediaInfo.height.toFloat()
         
         // 为每个文字覆盖层创建效果
-        for (overlay in textOverlays) {
-            // 创建文字绘制器
-            val textPainter = object : TextureOverlay.TextureOverlaySettings {
-                override fun drawFrame(
-                    canvas: android.graphics.Canvas,
-                    presentationTimeUs: Long
-                ): Boolean {
-                    // 检查时间范围
-                    val presentationTimeMs = presentationTimeUs / 1000
-                    if (presentationTimeMs < overlay.startTimeMs || presentationTimeMs > overlay.endTimeMs) {
-                        return false
-                    }
-                    
-                    // 创建画笔
-                    val paint = android.graphics.Paint().apply {
-                        color = overlay.textColor
-                        textSize = overlay.fontSize
-                        isAntiAlias = true
-                        textAlign = when (overlay.alignment) {
-                            0 -> android.graphics.Paint.Align.LEFT
-                            1 -> android.graphics.Paint.Align.CENTER
-                            2 -> android.graphics.Paint.Align.RIGHT
-                            else -> android.graphics.Paint.Align.CENTER
-                        }
-                    }
-                    
-                    // 计算位置
-                    val x = videoWidth * overlay.xPosition
-                    val y = videoHeight * overlay.yPosition
-                    
-                    // 绘制背景（如果需要）
-                    if (overlay.hasBackground) {
-                        val textBounds = android.graphics.Rect()
-                        paint.getTextBounds(overlay.text, 0, overlay.text.length, textBounds)
-                        
-                        val padding = overlay.fontSize * 0.2f
-                        val bgRect = android.graphics.RectF(
-                            x - textBounds.width() / 2 - padding,
-                            y - textBounds.height() - padding,
-                            x + textBounds.width() / 2 + padding,
-                            y + padding
-                        )
-                        
-                        val bgPaint = android.graphics.Paint().apply {
-                            color = overlay.backgroundColor
-                        }
-                        
-                        canvas.drawRect(bgRect, bgPaint)
-                    }
-                    
-                    // 绘制文字
-                    canvas.drawText(overlay.text, x, y, paint)
-                    
-                    return true
-                }
-            }
-            
-            // 创建文字覆盖效果
-            val textOverlayEffect = TextureOverlay(textPainter)
-            effects.add(textOverlayEffect)
-        }
+//        for (overlay in textOverlays) {
+//            // 创建文字绘制器
+//            val textPainter = object : TextureOverlay.TextureOverlaySettings {
+//                override fun drawFrame(
+//                    canvas: android.graphics.Canvas,
+//                    presentationTimeUs: Long
+//                ): Boolean {
+//                    // 检查时间范围
+//                    val presentationTimeMs = presentationTimeUs / 1000
+//                    if (presentationTimeMs < overlay.startTimeMs || presentationTimeMs > overlay.endTimeMs) {
+//                        return false
+//                    }
+//
+//                    // 创建画笔
+//                    val paint = android.graphics.Paint().apply {
+//                        color = overlay.textColor
+//                        textSize = overlay.fontSize
+//                        isAntiAlias = true
+//                        textAlign = when (overlay.alignment) {
+//                            0 -> android.graphics.Paint.Align.LEFT
+//                            1 -> android.graphics.Paint.Align.CENTER
+//                            2 -> android.graphics.Paint.Align.RIGHT
+//                            else -> android.graphics.Paint.Align.CENTER
+//                        }
+//                    }
+//
+//                    // 计算位置
+//                    val x = videoWidth * overlay.xPosition
+//                    val y = videoHeight * overlay.yPosition
+//
+//                    // 绘制背景（如果需要）
+//                    if (overlay.hasBackground) {
+//                        val textBounds = android.graphics.Rect()
+//                        paint.getTextBounds(overlay.text, 0, overlay.text.length, textBounds)
+//
+//                        val padding = overlay.fontSize * 0.2f
+//                        val bgRect = android.graphics.RectF(
+//                            x - textBounds.width() / 2 - padding,
+//                            y - textBounds.height() - padding,
+//                            x + textBounds.width() / 2 + padding,
+//                            y + padding
+//                        )
+//
+//                        val bgPaint = android.graphics.Paint().apply {
+//                            color = overlay.backgroundColor
+//                        }
+//
+//                        canvas.drawRect(bgRect, bgPaint)
+//                    }
+//
+//                    // 绘制文字
+//                    canvas.drawText(overlay.text, x, y, paint)
+//
+//                    return true
+//                }
+//            }
+//
+//            // 创建文字覆盖效果
+//            val textOverlayEffect = TextureOverlay(textPainter)
+//            effects.add(textOverlayEffect)
+//        }
         
         return effects
     }
@@ -1066,81 +1068,81 @@ class VideoEditorViewModel : ViewModel() {
         val videoHeight = mediaInfo.height.toFloat()
         
         // 为每个贴纸覆盖层创建效果
-        for (overlay in stickerOverlays) {
-            // 创建贴纸绘制器
-            val stickerPainter = object : TextureOverlay.TextureOverlaySettings {
-                override fun drawFrame(
-                    canvas: android.graphics.Canvas,
-                    presentationTimeUs: Long
-                ): Boolean {
-                    // 检查时间范围
-                    val presentationTimeMs = presentationTimeUs / 1000
-                    if (presentationTimeMs < overlay.startTimeMs || presentationTimeMs > overlay.endTimeMs) {
-                        return false
-                    }
-                    
-                    try {
-                        // 加载贴纸图像
-                        val context = com.blankj.utilcode.util.Utils.getApp()
-                        val bitmap = android.graphics.BitmapFactory.decodeResource(
-                            context.resources, 
-                            overlay.resourceId
-                        )
-                        
-                        if (bitmap != null) {
-                            // 计算贴纸尺寸
-                            val stickerSize = minOf(videoWidth, videoHeight) * overlay.size
-                            val scaledWidth = stickerSize
-                            val scaledHeight = stickerSize * bitmap.height / bitmap.width
-                            
-                            // 计算位置
-                            val x = videoWidth * overlay.xPosition - scaledWidth / 2
-                            val y = videoHeight * overlay.yPosition - scaledHeight / 2
-                            
-                            // 设置透明度
-                            val paint = android.graphics.Paint().apply {
-                                alpha = overlay.alpha
-                            }
-                            
-                            // 创建矩阵进行旋转
-                            val matrix = android.graphics.Matrix()
-                            matrix.postTranslate(x, y)
-                            matrix.postRotate(
-                                overlay.rotation,
-                                x + scaledWidth / 2,
-                                y + scaledHeight / 2
-                            )
-                            
-                            // 创建目标矩形
-                            val dstRect = android.graphics.RectF(
-                                x, y, x + scaledWidth, y + scaledHeight
-                            )
-                            
-                            // 绘制贴纸
-                            canvas.drawBitmap(
-                                bitmap,
-                                null,
-                                dstRect,
-                                paint
-                            )
-                            
-                            // 释放资源
-                            bitmap.recycle()
-                            
-                            return true
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "贴纸绘制失败", e)
-                    }
-                    
-                    return false
-                }
-            }
-            
-            // 创建纹理覆盖层效果
-            val textureOverlay = TextureOverlay(stickerPainter)
-            effects.add(textureOverlay)
-        }
+//        for (overlay in stickerOverlays) {
+//            // 创建贴纸绘制器
+//            val stickerPainter = object : TextureOverlay.TextureOverlaySettings {
+//                override fun drawFrame(
+//                    canvas: android.graphics.Canvas,
+//                    presentationTimeUs: Long
+//                ): Boolean {
+//                    // 检查时间范围
+//                    val presentationTimeMs = presentationTimeUs / 1000
+//                    if (presentationTimeMs < overlay.startTimeMs || presentationTimeMs > overlay.endTimeMs) {
+//                        return false
+//                    }
+//
+//                    try {
+//                        // 加载贴纸图像
+//                        val context = com.blankj.utilcode.util.Utils.getApp()
+//                        val bitmap = android.graphics.BitmapFactory.decodeResource(
+//                            context.resources,
+//                            overlay.resourceId
+//                        )
+//
+//                        if (bitmap != null) {
+//                            // 计算贴纸尺寸
+//                            val stickerSize = minOf(videoWidth, videoHeight) * overlay.size
+//                            val scaledWidth = stickerSize
+//                            val scaledHeight = stickerSize * bitmap.height / bitmap.width
+//
+//                            // 计算位置
+//                            val x = videoWidth * overlay.xPosition - scaledWidth / 2
+//                            val y = videoHeight * overlay.yPosition - scaledHeight / 2
+//
+//                            // 设置透明度
+//                            val paint = android.graphics.Paint().apply {
+//                                alpha = overlay.alpha
+//                            }
+//
+//                            // 创建矩阵进行旋转
+//                            val matrix = android.graphics.Matrix()
+//                            matrix.postTranslate(x, y)
+//                            matrix.postRotate(
+//                                overlay.rotation,
+//                                x + scaledWidth / 2,
+//                                y + scaledHeight / 2
+//                            )
+//
+//                            // 创建目标矩形
+//                            val dstRect = android.graphics.RectF(
+//                                x, y, x + scaledWidth, y + scaledHeight
+//                            )
+//
+//                            // 绘制贴纸
+//                            canvas.drawBitmap(
+//                                bitmap,
+//                                null,
+//                                dstRect,
+//                                paint
+//                            )
+//
+//                            // 释放资源
+//                            bitmap.recycle()
+//
+//                            return true
+//                        }
+//                    } catch (e: Exception) {
+//                        Log.e(TAG, "贴纸绘制失败", e)
+//                    }
+//
+//                    return false
+//                }
+//            }
+//
+//            // 创建纹理覆盖层效果
+//            val textureOverlay = TextureOverlay(stickerPainter)
+//            effects.add(textureOverlay)
+//        }
         
         return effects
     }

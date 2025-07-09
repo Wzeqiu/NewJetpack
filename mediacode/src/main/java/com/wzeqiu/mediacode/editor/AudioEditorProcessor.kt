@@ -8,9 +8,9 @@ import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.effect.VolumeEffect
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.EditedMediaItemSequence
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.Transformer
@@ -160,7 +160,7 @@ class AudioEditorProcessor private constructor(private val context: Context) {
             outputFile.parentFile?.mkdirs()
             
             // 创建音量效果
-            val volumeEffect = VolumeEffect(limitedVolume)
+//            val volumeEffect = VolumeEffect(limitedVolume)
             
             // 创建MediaItem
             val mediaItem = MediaItem.fromUri(Uri.fromFile(sourceFile))
@@ -168,7 +168,7 @@ class AudioEditorProcessor private constructor(private val context: Context) {
             // 创建编辑后的媒体项并应用音量效果
             val editedMediaItem = EditedMediaItem.Builder(mediaItem)
                 .setRemoveVideo(true) // 确保移除可能存在的视频轨道
-                .setEffects(listOf(volumeEffect))
+//                .setEffects(listOf(volumeEffect))
                 .build()
             
             // 创建转换器
@@ -249,11 +249,26 @@ class AudioEditorProcessor private constructor(private val context: Context) {
             val mediaItems = audioPaths.map { path ->
                 MediaItem.fromUri(Uri.fromFile(File(path)))
             }
-            
+
+
+            val mediaItemSequence = EditedMediaItemSequence.Builder()
+            // 创建多个MediaItem
+            audioPaths.map { path ->
+                mediaItemSequence.addItem(
+                    EditedMediaItem.Builder(
+                        MediaItem.fromUri(
+                            Uri.fromFile(
+                                File(path)
+                            )
+                        )
+                    ).build()
+                )
+            }
+
+
             // 创建Composition
-            val composition = Composition.Builder(mediaItems)
-                .build()
-            
+            val composition = Composition.Builder(mediaItemSequence.build()).build()
+
             // 创建转换器
             val transformer = Transformer.Builder(context)
                 .addListener(object : Transformer.Listener {

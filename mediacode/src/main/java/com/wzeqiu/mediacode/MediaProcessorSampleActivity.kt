@@ -19,6 +19,7 @@ import com.common.media.MediaManageActivity
 import com.common.utils.media.MediaProcessor
 import com.hjq.permissions.Permission
 import com.hjq.permissions.XXPermissions
+import com.wzeqiu.mediacode.editor.VideoEditorActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -46,6 +47,7 @@ class MediaProcessorSampleActivity : AppCompatActivity() {
                     intent.getParcelableExtra<MediaInfo>(MediaManageActivity.RESULT_DATA)
                 if (mediaInfo != null) {
                     handleSelectedMedia(mediaInfo)
+                    startActivity(Intent(this@MediaProcessorSampleActivity, VideoEditorActivity::class.java).putExtra(VideoEditorActivity.EXTRA_MEDIA_INFO, mediaInfo))
                 }
 
                 // 获取多个媒体文件结果（如果有）

@@ -3,6 +3,7 @@ package com.wzeqiu.mediacode.editor.test
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import com.common.media.MediaConfig
 import com.common.media.MediaInfo
 import com.wzeqiu.mediacode.editor.AudioEditOperation
 import com.wzeqiu.mediacode.editor.StickerOverlay
@@ -85,16 +86,13 @@ class VideoEditorTestHelper(private val context: Context) {
     private fun loadSampleMedia(): MediaInfo {
         // 创建测试用的MediaInfo对象
         return MediaInfo(
-            id = "sample_video",
             name = "测试视频",
             path = sampleVideoPath,
-            mimeType = "video/mp4",
+            mediaType = MediaConfig.MEDIA_TYPE_VIDEO,
             size = File(sampleVideoPath).length(),
             duration = 15000, // 15秒
             width = 1280,
             height = 720,
-            orientation = 0,
-            dateAdded = System.currentTimeMillis()
         )
     }
     
@@ -129,7 +127,7 @@ class VideoEditorTestHelper(private val context: Context) {
         val startMs = viewModel.getTrimStartMs()
         val endMs = viewModel.getTrimEndMs()
         
-        if (startMs != 2000 || endMs != 10000) {
+        if (startMs.toInt() != 2000 || endMs.toInt() != 10000) {
             throw Exception("裁剪范围设置失败，期望：[2000, 10000]，实际：[$startMs, $endMs]")
         }
         
