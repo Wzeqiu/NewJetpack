@@ -73,6 +73,26 @@ class VideoEditorActivity : AppCompatActivity() {
         
         // 观察ViewModel中的数据变化
         observeViewModel()
+        
+        // 设置播放/暂停按钮点击事件
+        viewBinding.btnPlayPause.setOnClickListener {
+            viewModel.togglePlayPause()
+        }
+        
+        // 设置进度条变化监听
+        viewBinding.seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    val duration = viewModel.mediaDuration.value ?: 0
+                    val position = duration * progress / 100
+                    viewModel.seekTo(position)
+                }
+            }
+            
+            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
+            
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
+        })
     }
     
     /**
@@ -96,10 +116,18 @@ class VideoEditorActivity : AppCompatActivity() {
      */
     private fun initVideoPreview() {
         mediaInfo?.let { media ->
+            // 加载媒体到ViewModel
             viewModel.loadMedia(media)
+            
+            // 设置PlayerView的播放器实例
+            viewBinding.playerView.player = viewModel.getPlayer()
             
             // 初始化时间轴
             initTimeline(media)
+            
+            // 更新UI显示
+            viewBinding.tvTotalTime.text = media.getFormattedDuration()
+            viewBinding.tvCurrentTime.text = "00:00"
         }
     }
     
@@ -146,6 +174,9 @@ class VideoEditorActivity : AppCompatActivity() {
             
             // 更新时间轴位置
             viewBinding.videoTimeline.setCurrentPosition(position)
+            
+            // 更新进度条和时间显示
+            updatePlaybackProgress(position)
         }
         
         // 观察文字覆盖层列表
@@ -158,6 +189,21 @@ class VideoEditorActivity : AppCompatActivity() {
         viewModel.stickerOverlayList.observe(this) { stickerOverlays ->
             // 贴纸覆盖层列表更新时，更新当前显示
             updateStickerOverlayVisibility(viewModel.playbackPosition.value ?: 0)
+        }
+        
+        // 观察播放状态
+        viewModel.isPlaying.observe(this) { isPlaying ->
+            // 更新播放/暂停按钮图标
+//            viewBinding.btnPlayPause.setImageResource(
+//                if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play
+//            )
+        }
+        
+        // 观察媒体时长
+        viewModel.mediaDuration.observe(this) { duration ->
+            // 更新总时长显示
+            val formattedDuration = formatDuration(duration)
+            viewBinding.tvTotalTime.text = formattedDuration
         }
     }
     
@@ -309,7 +355,37 @@ class VideoEditorActivity : AppCompatActivity() {
     
     override fun onDestroy() {
         super.onDestroy()
-        // 释放资源
+        // 释放资源前先解除PlayerView与Player的绑定
+        viewBinding.playerView.player = null
+        // 释放ViewModel中的资源
         viewModel.releaseResources()
+    }
+    
+    /**
+     * 更新播放进度
+     * 
+     * @param position 当前播放位置（毫秒）
+     */
+    private fun updatePlaybackProgress(position: Long) {
+        // 更新当前时间显示
+        viewBinding.tvCurrentTime.text = formatDuration(position)
+        
+        // 更新进度条
+        val duration = viewModel.mediaDuration.value ?: 1L
+        val progress = ((position.toFloat() / duration) * 100).toInt()
+        viewBinding.seekBar.progress = progress
+    }
+    
+    /**
+     * 格式化时长
+     * 
+     * @param durationMs 时长（毫秒）
+     * @return 格式化后的时长字符串
+     */
+    private fun formatDuration(durationMs: Long): String {
+        val totalSeconds = durationMs / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return String.format("%02d:%02d", minutes, seconds)
     }
 } 

@@ -39,6 +39,10 @@ import kotlin.coroutines.resumeWithException
 import androidx.media3.common.Effect
 import androidx.media3.transformer.Effects
 import androidx.core.graphics.scale
+import androidx.media3.transformer.DefaultEncoderFactory
+import androidx.media3.transformer.VideoEncoderSettings
+import androidx.media3.transformer.VideoEncoderSettings.RATE_UNSET
+import kotlin.math.max
 
 /**
  * 水印工具类，支持为图片和视频添加水印
@@ -350,6 +354,38 @@ object WatermarkUtils {
             // 创建输出目录
             FileUtils.createOrExistsDir(outputVideoFile.parentFile)
 
+            // 获取视频比特率、Profile和Level以保持质量
+            val extractor = MediaExtractor()
+            var videoBitrate = 8_000_000 // 默认8Mbps
+            var videoProfile = -1
+            var videoLevel = -1
+            try {
+                extractor.setDataSource(inputVideoFile.absolutePath)
+                for (i in 0 until extractor.trackCount) {
+                    val format = extractor.getTrackFormat(i)
+                    val mime = format.getString(MediaFormat.KEY_MIME)
+                    if (mime?.startsWith("video/") == true) {
+                        if (format.containsKey(MediaFormat.KEY_BIT_RATE)) {
+                            videoBitrate = format.getInteger(MediaFormat.KEY_BIT_RATE)
+                        }
+                        if (format.containsKey(MediaFormat.KEY_PROFILE)) {
+                            videoProfile = format.getInteger(MediaFormat.KEY_PROFILE)
+                        }
+                        if (format.containsKey(MediaFormat.KEY_LEVEL)) {
+                            videoLevel = format.getInteger(MediaFormat.KEY_LEVEL)
+                        }
+                        break
+                    }
+                }
+                videoBitrate= max(videoBitrate,8_000_000)
+            } catch (e: Exception) {
+                Log.w(WatermarkUtils.TAG, "无法获取视频编码参数，将使用默认值", e)
+            } finally {
+                extractor.release()
+            }
+            Log.d(WatermarkUtils.TAG, "原视频参数 - Bitrate: $videoBitrate, Profile: $videoProfile, Level: $videoLevel")
+
+
             // 获取视频尺寸
             val retriever = MediaMetadataRetriever()
             retriever.setDataSource(inputVideoFile.absolutePath)
@@ -373,33 +409,33 @@ object WatermarkUtils {
             val oFrameY: Float
 
             when (position) {
-                WatermarkPosition.LEFT_TOP -> {
+                WatermarkUtils.WatermarkPosition.LEFT_TOP -> {
                     bFrameX =-1f+marginFactor
                     bFrameY = 1f-marginFactor
                     oFrameX=-1f
                     oFrameY=1f
                 }
-                WatermarkPosition.RIGHT_TOP -> {
+                WatermarkUtils.WatermarkPosition.RIGHT_TOP -> {
                     bFrameX =1f-marginFactor
                     bFrameY = 1f-marginFactor
 
                     oFrameX=1f
                     oFrameY=1f
                 }
-                WatermarkPosition.LEFT_BOTTOM -> {
+                WatermarkUtils.WatermarkPosition.LEFT_BOTTOM -> {
                     bFrameX =-1f+marginFactor
                     bFrameY = -1f+marginFactor
 
                     oFrameX=-1f
                     oFrameY=-1f
                 }
-                WatermarkPosition.RIGHT_BOTTOM -> {
+                WatermarkUtils.WatermarkPosition.RIGHT_BOTTOM -> {
                     bFrameX = 1f-marginFactor
                     bFrameY = -1f+marginFactor
                     oFrameX=1f
                     oFrameY=-1f
                 }
-                WatermarkPosition.CENTER -> {
+                WatermarkUtils.WatermarkPosition.CENTER -> {
                     bFrameX = 0f
                     bFrameY =0f
                     oFrameX=0f
@@ -417,13 +453,13 @@ object WatermarkUtils {
                 .build()
 
             val bitmapOverlay: TextureOverlay = BitmapOverlay.createStaticBitmapOverlay(scaledWatermarkBitmap, overlaySettings)
-            
+
             // 创建Media3转换任务
             val result = withContext(Dispatchers.Main) {
                 suspendCancellableCoroutine<Boolean> { continuation ->
                     val listener = object : Transformer.Listener {
                         override fun onCompleted(composition: Composition, exportResult: ExportResult) {
-                            Log.d(TAG, "视频水印添加成功")
+                            Log.d(WatermarkUtils.TAG, "视频水印添加成功")
                             if (continuation.isActive) continuation.resume(true)
                         }
 
@@ -432,20 +468,31 @@ object WatermarkUtils {
                             exportResult: ExportResult,
                             exception: ExportException
                         ) {
-                            Log.e(TAG, "视频水印添加失败", exception)
+                            Log.e(WatermarkUtils.TAG, "视频水印添加失败", exception)
                             if (continuation.isActive) {
                                 continuation.resume(false)
                             }
                         }
                     }
+                    // 配置转换器，保留原始视频质量
+                    val settingsBuilder = VideoEncoderSettings.Builder()    // 配置转换器，保留原始视频质量
+                        .setBitrate(videoBitrate)
+                        .setEncoderPerformanceParameters(30, RATE_UNSET)
+                    if (videoProfile != -1 && videoLevel != -1) {
+                        settingsBuilder.setEncodingProfileLevel(videoProfile,videoLevel)
+                    }
+
+                    val encoderFactory = DefaultEncoderFactory.Builder(context)
+                        .setEnableFallback(true) // 关键：禁止回退到低质量的软件编码器
+                        .setRequestedVideoEncoderSettings(settingsBuilder.build())
+                        .build()
 
                     val transformer = Transformer.Builder(context)
-                        .setVideoMimeType(MediaFormat.MIMETYPE_VIDEO_AVC)
+                        .setEncoderFactory(encoderFactory)
                         .addListener(listener)
                         .build()
 
                     val mediaItem = MediaItem.fromUri(inputVideoFile.toURI().toString())
-
                     // 1. 将 TextureOverlay 包装在 OverlayEffect 中，这才是正确的 Effect 类型
                     val overlayEffect = OverlayEffect(listOf(bitmapOverlay))
                     val videoEffects: List<Effect> = listOf(overlayEffect)
@@ -466,12 +513,12 @@ object WatermarkUtils {
                     }
                 }
             }
-            
+
             // 根据参数决定是否释放缩放后的水印资源
             if (recycleWatermark) {
                 scaledWatermarkBitmap.recycle()
             }
-            
+
             return@withContext result
         } catch (e: Exception) {
             Log.e(TAG, "添加视频水印失败", e)
