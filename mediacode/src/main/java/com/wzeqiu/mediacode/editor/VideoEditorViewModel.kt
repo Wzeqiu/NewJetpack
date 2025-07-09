@@ -555,14 +555,27 @@ class VideoEditorViewModel : ViewModel() {
     }
     
     /**
+     * 获取播放器实例
+     * 
+     * @return ExoPlayer实例
+     */
+    fun getPlayer(): ExoPlayer? {
+        return player
+    }
+    
+    /**
      * 释放资源
      */
     fun releaseResources() {
-        player?.release()
-        player = null
-        
-        musicPlayer?.release()
-        musicPlayer = null
+        viewModelScope.launch(Dispatchers.Main) {
+            // 释放播放器资源
+            player?.release()
+            player = null
+            
+            // 释放背景音乐播放器资源
+            musicPlayer?.release()
+            musicPlayer = null
+        }
     }
     
     /**
