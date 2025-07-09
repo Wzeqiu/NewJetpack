@@ -1,6 +1,7 @@
-package com.common.media
+package com.common.utils.media
 
 import android.content.Context
+import com.common.media.MediaInfo
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
 import kotlin.coroutines.resume

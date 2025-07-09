@@ -1,12 +1,10 @@
-package com.common.media
+package com.common.utils.media
 
 import android.content.Context
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
@@ -14,20 +12,23 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.EditedMediaItemSequence
+import androidx.media3.transformer.EncoderSelector
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
+import androidx.media3.transformer.TransformationRequest
 import androidx.media3.transformer.Transformer
+import com.common.media.MediaConfig
+import com.common.media.MediaInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
-import java.io.IOException
 import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.security.MessageDigest
 import java.util.concurrent.CountDownLatch
-import kotlin.math.min
 
 /**
  * 音视频工具类
@@ -49,9 +50,9 @@ object MediaUtils {
         // 获取媒体类型
         val mimeType = extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
         val mediaType = when {
-            mimeType?.contains("video") == true -> MediaConfig.MEDIA_TYPE_VIDEO
-            mimeType?.contains("audio") == true -> MediaConfig.MEDIA_TYPE_AUDIO
-            else -> MediaConfig.MEDIA_TYPE_IMAGE
+            mimeType?.contains("video") == true -> MediaConfig.Companion.MEDIA_TYPE_VIDEO
+            mimeType?.contains("audio") == true -> MediaConfig.Companion.MEDIA_TYPE_AUDIO
+            else -> MediaConfig.Companion.MEDIA_TYPE_IMAGE
         }
 
         // 获取媒体尺寸（宽高）
@@ -144,46 +145,51 @@ object MediaUtils {
             var errorMessage = ""
 
 
-            val mediaItem = MediaItem.Builder()
-                .setUri(Uri.fromFile(sourceFile))
-                .setClippingConfiguration(
-                    MediaItem.ClippingConfiguration.Builder()
-                        .setStartPositionMs(startTimeMs)
-                        .setEndPositionMs(finalEndTimeMs)
-                        .build()
-                ).build()
 
-            // 创建裁剪效果
-            val clippedMediaItem = EditedMediaItem.Builder(mediaItem)
-                .setRemoveAudio(false)
-                .setRemoveVideo(false)
-                .setFlattenForSlowMotion(false)
-                .build()
             CoroutineScope(Dispatchers.Main).launch {
+
+                val mediaItem = MediaItem.Builder()
+                    .setUri(Uri.fromFile(sourceFile))
+                    .setClippingConfiguration(
+                        MediaItem.ClippingConfiguration.Builder()
+                            .setStartPositionMs(startTimeMs)
+                            .setEndPositionMs(finalEndTimeMs)
+                            .build()
+                    ).build()
+
+
+                val request = TransformationRequest.Builder()
+                    .setVideoMimeType(MimeTypes.VIDEO_H264)
+                    .setAudioMimeType(MimeTypes.AUDIO_AAC)
+                    .build()
+
+                // 创建裁剪效果
+                val clippedMediaItem = EditedMediaItem.Builder(mediaItem)
+                    .setRemoveAudio(false)
+                    .setRemoveVideo(false)
+                    .setFlattenForSlowMotion(false)
+                    .build()
+
+
                 // 创建转换器
-                val transformer = Transformer.Builder(context).build()
+                val transformer = Transformer.Builder(context).addListener(object : Transformer.Listener {
+                        override fun onCompleted(composition: Composition, result: ExportResult) {
+                            exportSuccess = true
+                            countDownLatch.countDown()
+                        }
 
-                transformer.addListener(object : Transformer.Listener {
-                    override fun onCompleted(composition: Composition, result: ExportResult) {
-                        exportSuccess = true
-                        countDownLatch.countDown()
-                    }
-
-                    override fun onError(
-                        composition: Composition,
-                        result: ExportResult,
-                        exception: ExportException
-                    ) {
-                        errorMessage = "导出失败: ${exception.message}"
-                        countDownLatch.countDown()
-                    }
-                })
-
-
+                        override fun onError(
+                            composition: Composition,
+                            result: ExportResult,
+                            exception: ExportException
+                        ) {
+                            errorMessage = "导出失败: ${exception.message}"
+                            countDownLatch.countDown()
+                        }
+                    }).build()
                 // 执行导出
                 transformer.start(clippedMediaItem, outputFilePath)
             }
-
             // 等待导出完成
             countDownLatch.await()
 
@@ -225,39 +231,38 @@ object MediaUtils {
                 if (exists()) delete() // 如果输出文件已存在，则删除
             }
 
-            val mediaItem = MediaItem.fromUri(Uri.fromFile(videoFile))
-
-            // 创建只包含音频的编辑项
-            val audioOnlyItem = EditedMediaItem.Builder(mediaItem)
-                .setRemoveVideo(true)  // 移除视频轨道，只保留音频
-                .setRemoveAudio(false)
-                .build()
-
-            // 创建转换器
-            val transformer = Transformer.Builder(context)
-                .setAudioMimeType(MimeTypes.AUDIO_AAC) // 设置音频输出格式为AAC
-                .build()
 
             val countDownLatch = CountDownLatch(1)
             var exportSuccess = false
             var errorMessage = ""
+            CoroutineScope(Dispatchers.Main).launch {
+                // 创建转换器
+                val transformer = Transformer.Builder(context)
+                    .setAudioMimeType(MimeTypes.AUDIO_AAC) // 设置音频输出格式为AAC
+                    .addListener(object : Transformer.Listener {
+                        override fun onCompleted(composition: Composition, result: ExportResult) {
+                            exportSuccess = true
+                            countDownLatch.countDown()
+                        }
 
-            transformer.addListener(object : Transformer.Listener {
-                override fun onCompleted(composition: Composition, result: ExportResult) {
-                    exportSuccess = true
-                    countDownLatch.countDown()
-                }
+                        override fun onError(
+                            composition: Composition,
+                            result: ExportResult,
+                            exception: ExportException
+                        ) {
+                            errorMessage = "提取音频失败: ${exception.message}"
+                            countDownLatch.countDown()
+                        }
+                    })
+                    .build()
 
-                override fun onError(
-                    composition: Composition,
-                    result: ExportResult,
-                    exception: ExportException
-                ) {
-                    errorMessage = "提取音频失败: ${exception.message}"
-                    countDownLatch.countDown()
-                }
-            })
-            Handler(Looper.getMainLooper()).post {
+
+                val mediaItem = MediaItem.fromUri(Uri.fromFile(videoFile))
+                // 创建只包含音频的编辑项
+                val audioOnlyItem = EditedMediaItem.Builder(mediaItem)
+                    .setRemoveVideo(true)  // 移除视频轨道，只保留音频
+                    .setRemoveAudio(false)
+                    .build()
                 // 执行导出
                 transformer.start(audioOnlyItem, outputPath)
             }
