@@ -31,7 +31,7 @@ class MediaManagerViewModel(application: Application) : AndroidViewModel(applica
             when (mediaConfig.mediaType) {
                 MediaConfig.MEDIA_TYPE_IMAGE -> mediaSources.postValue(getImageSource(this))
                 MediaConfig.MEDIA_TYPE_VIDEO -> mediaSources.postValue(getVideoSource(this))
-                MediaConfig.MEDIA_TYPE_AUDIO -> {}
+                MediaConfig.MEDIA_TYPE_AUDIO -> mediaSources.postValue(getAudioSource(this))
             }
         }
     }
@@ -96,6 +96,41 @@ class MediaManagerViewModel(application: Application) : AndroidViewModel(applica
             }
         }
         return videos
+    }
+
+    /**
+     * 获取系统音频资源
+     */
+    private fun getAudioSource(scope: CoroutineScope): List<MediaInfo> {
+        val audios = mutableListOf<MediaInfo>()
+        val queryAudio = arrayOf(
+            MediaStore.Audio.Media.DISPLAY_NAME,
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.SIZE
+        )
+        val selection = MediaStore.Audio.Media.MIME_TYPE + "=?"
+        val selectionArgs = arrayOf("audio/mpeg")
+        getApplication<Application>().contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            queryAudio, null, null,
+            MediaStore.Audio.AudioColumns.DATE_MODIFIED + " DESC"
+        )?.use {
+            if (it.moveToFirst()) {
+                val nameIndex = it.getColumnIndex(MediaStore.Audio.AudioColumns.DISPLAY_NAME)
+                val pathIndex = it.getColumnIndex(MediaStore.Audio.AudioColumns.DATA)
+                val durationIndex = it.getColumnIndex(MediaStore.Audio.AudioColumns.DURATION)
+                val sizeIndex = it.getColumnIndex(MediaStore.Audio.AudioColumns.SIZE)
+                do {
+                    val name = it.getString(nameIndex)
+                    val path = it.getString(pathIndex)
+                    val duration = it.getLong(durationIndex)
+                    val size = it.getLong(sizeIndex)
+                    audios.add(MediaInfo(name, path, size, duration, MediaConfig.MEDIA_TYPE_AUDIO))
+                } while (it.moveToNext() && scope.isActive)
+            }
+        }
+        return audios
     }
 
 

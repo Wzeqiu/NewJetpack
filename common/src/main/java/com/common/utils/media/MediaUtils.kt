@@ -158,12 +158,6 @@ object MediaUtils {
                             .build()
                     ).build()
 
-
-                val request = TransformationRequest.Builder()
-                    .setVideoMimeType(MimeTypes.VIDEO_H264)
-                    .setAudioMimeType(MimeTypes.AUDIO_AAC)
-                    .build()
-
                 // 创建裁剪效果
                 val clippedMediaItem = EditedMediaItem.Builder(mediaItem)
                     .setRemoveAudio(false)

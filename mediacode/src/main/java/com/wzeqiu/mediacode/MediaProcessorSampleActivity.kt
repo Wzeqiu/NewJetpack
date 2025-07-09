@@ -72,7 +72,7 @@ class MediaProcessorSampleActivity : AppCompatActivity() {
 
         // 只有视频可以提取音频和裁剪
         btnExtractAudio.isEnabled = mediaInfo.isVideo()
-        btnTrimVideo.isEnabled = mediaInfo.isVideo()
+        btnTrimVideo.isEnabled = true
         findViewById<Button>(R.id.btn_change_resolution).isEnabled = mediaInfo.isVideo()
     }
 
@@ -127,7 +127,7 @@ class MediaProcessorSampleActivity : AppCompatActivity() {
     // 请求权限并选择媒体
     private fun requestPermissionsAndSelectMedia(mediaType: Int) {
         XXPermissions.with(this)
-            .permission(Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEO)
+            .permission(Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEO, Permission.READ_MEDIA_AUDIO)
             .request { _, allGranted ->
                 if (allGranted) {
                     // 创建媒体选择配置
