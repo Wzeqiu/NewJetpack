@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".editor.VideoEditorActivity">
+
+    <!-- 标题栏 -->
+    <include
+        android:id="@+id/title_bar"
+        layout="@layout/layout_common_titlebar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 视频预览区域 -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintDimensionRatio="16:9"
+        app:layout_constraintTop_toBottomOf="@id/title_bar">
+        
+        <androidx.media3.ui.PlayerView
+            android:id="@+id/player_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/black"
+            app:use_controller="false" />
+            
+        <!-- 文字覆盖层容器 -->
+        <FrameLayout
+            android:id="@+id/text_overlay_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+            
+        <!-- 贴纸覆盖层容器 -->
+        <FrameLayout
+            android:id="@+id/sticker_overlay_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+
+    <!-- 播放控制栏 -->
+    <LinearLayout
+        android:id="@+id/control_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp"
+        app:layout_constraintTop_toBottomOf="@id/player_view">
+
+        <!-- 播放进度条 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_current_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#333333"
+                android:textSize="12sp"
+                tools:text="00:00" />
+
+            <SeekBar
+                android:id="@+id/seek_bar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:layout_weight="1"
+                android:max="100"
+                android:progressTint="@color/design_default_color_primary" />
+
+            <TextView
+                android:id="@+id/tv_total_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#333333"
+                android:textSize="12sp"
+                tools:text="05:30" />
+        </LinearLayout>
+
+        <!-- 播放控制按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btn_previous"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="上一帧"
+                android:src="@drawable/ic_skip_previous"
+                app:tint="#333333" />
+
+            <ImageButton
+                android:id="@+id/btn_play_pause"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginHorizontal="16dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="播放/暂停"
+                android:src="@drawable/ic_play"
+                app:tint="#333333" />
+
+            <ImageButton
+                android:id="@+id/btn_next"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="下一帧"
+                android:src="@drawable/ic_skip_next"
+                app:tint="#333333" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 编辑面板区域 -->
+    <FrameLayout
+        android:id="@+id/panel_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="#F5F5F5"
+        app:layout_constraintBottom_toTopOf="@id/bottom_toolbar"
+        app:layout_constraintTop_toBottomOf="@id/control_bar">
+
+        <!-- 这里会动态添加各种编辑面板 -->
+
+    </FrameLayout>
+
+    <!-- 视频时间轴 -->
+    <com.wzeqiu.mediacode.editor.timeline.VideoTimelineView
+        android:id="@+id/video_timeline"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="#EEEEEE"
+        app:layout_constraintBottom_toTopOf="@id/bottom_toolbar" />
+
+    <!-- 底部工具栏 -->
+    <LinearLayout
+        android:id="@+id/bottom_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/white"
+        android:elevation="4dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- 裁剪按钮 -->
+        <LinearLayout
+            android:id="@+id/btn_trim"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="裁剪"
+                android:src="@drawable/ic_content_cut" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="裁剪"
+                android:textColor="#333333"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- 滤镜按钮 -->
+        <LinearLayout
+            android:id="@+id/btn_filter"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="滤镜"
+                android:src="@drawable/ic_filter" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="滤镜"
+                android:textColor="#333333"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- 音频按钮 -->
+        <LinearLayout
+            android:id="@+id/btn_audio"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="音频"
+                android:src="@drawable/ic_music_note" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="音频"
+                android:textColor="#333333"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- 文字按钮 -->
+        <LinearLayout
+            android:id="@+id/btn_text"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="文字"
+                android:src="@drawable/ic_text_fields" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="文字"
+                android:textColor="#333333"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- 贴纸按钮 -->
+        <LinearLayout
+            android:id="@+id/btn_sticker"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="贴纸"
+                android:src="@drawable/ic_sticker" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="贴纸"
+                android:textColor="#333333"
+                android:textSize="12sp" />
+        </LinearLayout>
+        
+        <!-- 变速按钮 -->
+        <LinearLayout
+            android:id="@+id/btn_speed"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="变速"
+                android:src="@drawable/ic_speed" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="变速"
+                android:textColor="#333333"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- 更多按钮 -->
+        <LinearLayout
+            android:id="@+id/btn_more"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="更多"
+                android:src="@drawable/ic_more_horiz" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="更多"
+                android:textColor="#333333"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout> 

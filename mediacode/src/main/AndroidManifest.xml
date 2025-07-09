@@ -23,6 +23,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <activity
+            android:name=".editor.VideoEditorActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Material3.DayNight.NoActionBar" />
+        
+        <activity
+            android:name=".editor.test.IntegrationTestActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:label="视频编辑器测试" />
+        
     </application>
 
 </manifest>

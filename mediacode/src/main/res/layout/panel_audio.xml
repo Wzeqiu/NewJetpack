@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="音频编辑"
+        android:textColor="#333333"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- 原始音频控制区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#F5F5F5"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="原始音频"
+            android:textColor="#333333"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- 音量控制 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_volume_down"
+                app:tint="#666666" />
+
+            <SeekBar
+                android:id="@+id/seek_bar_original_volume"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="100"
+                android:progress="100" />
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_volume_up"
+                app:tint="#666666" />
+
+            <TextView
+                android:id="@+id/tv_original_volume"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:text="100%"
+                android:textColor="#333333"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- 静音开关 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="静音"
+                android:textColor="#333333"
+                android:textSize="14sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_mute_original"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- 音频提取按钮 -->
+        <Button
+            android:id="@+id/btn_extract_audio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="提取音频" />
+    </LinearLayout>
+
+    <!-- 背景音乐区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#F5F5F5"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="背景音乐"
+            android:textColor="#333333"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- 音乐选择 -->
+        <LinearLayout
+            android:id="@+id/layout_music_selector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_music_note"
+                app:tint="#666666" />
+
+            <TextView
+                android:id="@+id/tv_music_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="未选择音乐"
+                android:textColor="#666666"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btn_select_music"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="选择"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- 背景音乐音量控制 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_volume_down"
+                app:tint="#666666" />
+
+            <SeekBar
+                android:id="@+id/seek_bar_music_volume"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="100"
+                android:progress="80" />
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_volume_up"
+                app:tint="#666666" />
+
+            <TextView
+                android:id="@+id/tv_music_volume"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:text="80%"
+                android:textColor="#333333"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- 背景音乐裁剪控制 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="音乐裁剪"
+                android:textColor="#333333"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_music_start_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#333333"
+                    android:textSize="12sp"
+                    android:text="00:00" />
+
+                <SeekBar
+                    android:id="@+id/seek_bar_music_trim"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight="1"
+                    android:max="100" />
+
+                <TextView
+                    android:id="@+id/tv_music_end_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#333333"
+                    android:textSize="12sp"
+                    android:text="00:00" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 循环播放 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="循环播放"
+                android:textColor="#333333"
+                android:textSize="14sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_loop_music"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- 渐入渐出控制 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="渐入/渐出"
+                android:textColor="#333333"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="渐入时长(秒)"
+                        android:textColor="#666666"
+                        android:textSize="12sp" />
+
+                    <SeekBar
+                        android:id="@+id/seek_bar_fade_in"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:max="50"
+                        android:progress="0" />
+
+                    <TextView
+                        android:id="@+id/tv_fade_in_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="0.0s"
+                        android:textColor="#333333"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="16dp"
+                    android:layout_height="1dp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="渐出时长(秒)"
+                        android:textColor="#666666"
+                        android:textSize="12sp" />
+
+                    <SeekBar
+                        android:id="@+id/seek_bar_fade_out"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:max="50"
+                        android:progress="0" />
+
+                    <TextView
+                        android:id="@+id/tv_fade_out_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="0.0s"
+                        android:textColor="#333333"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 应用按钮 -->
+    <Button
+        android:id="@+id/btn_apply_audio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="应用音频设置" />
+
+</LinearLayout> 

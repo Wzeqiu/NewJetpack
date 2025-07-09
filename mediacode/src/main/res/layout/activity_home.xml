@@ -10,6 +10,15 @@
     android:padding="16dp"
     tools:context=".HomeActivity">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="多媒体处理工具"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="24dp" />
+
     <Button
         android:id="@+id/btVideo"
         android:layout_width="match_parent"
@@ -28,6 +37,20 @@
         android:id="@+id/btMediaProcessor"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="音视频处理工具" />
+        android:text="音视频处理工具"
+        android:layout_marginBottom="8dp" />
+        
+    <Button
+        android:id="@+id/btVideoEditor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="视频编辑器"
+        android:layout_marginBottom="8dp" />
+        
+    <Button
+        android:id="@+id/btIntegrationTest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="集成测试" />
 
 </LinearLayout>

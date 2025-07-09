@@ -15,6 +15,8 @@ import com.common.media.MediaInfo
 import com.common.media.MediaManageActivity
 import com.common.utils.WatermarkUtils
 import com.wzeqiu.mediacode.databinding.ActivityHomeBinding
+import com.wzeqiu.mediacode.editor.VideoEditorActivity
+import com.wzeqiu.mediacode.editor.test.IntegrationTestActivity
 import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.random.Random
@@ -32,6 +34,16 @@ class HomeActivity : AppCompatActivity() {
             // 添加跳转到音视频处理示例Activity的按钮点击事件
             btMediaProcessor.setOnClickListener {
                 startActivity(Intent(this@HomeActivity, MediaProcessorSampleActivity::class.java))
+            }
+            
+            // 添加跳转到视频编辑器Activity的按钮点击事件
+            btVideoEditor.setOnClickListener {
+                startActivity(Intent(this@HomeActivity, VideoEditorActivity::class.java))
+            }
+            
+            // 添加跳转到集成测试Activity的按钮点击事件
+            btIntegrationTest.setOnClickListener {
+                startActivity(Intent(this@HomeActivity, IntegrationTestActivity::class.java))
             }
             
             btImag.setOnClickListener {

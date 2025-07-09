@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="视频裁剪"
+        android:textColor="#333333"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- 裁剪范围选择器 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="裁剪范围"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="开始时间："
+                android:textColor="#333333"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/et_start_time"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:drawable/edit_text"
+                android:hint="00:00:00"
+                android:inputType="time"
+                android:padding="8dp"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="结束时间："
+                android:textColor="#333333"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/et_end_time"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:drawable/edit_text"
+                android:hint="00:00:00"
+                android:inputType="time"
+                android:padding="8dp"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="裁剪区间："
+                android:textColor="#333333"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tv_trim_range"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="#007AFF"
+                android:textSize="14sp"
+                tools:text="00:00:00 - 00:01:30" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 预览操作按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_preview_trim"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="预览" />
+
+        <Button
+            android:id="@+id/btn_reset_trim"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="重置" />
+    </LinearLayout>
+
+    <!-- 分割视频部分 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="#DDDDDD" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="视频分割"
+        android:textColor="#333333"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="分割点："
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/et_split_point"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:drawable/edit_text"
+            android:hint="00:00:00"
+            android:inputType="time"
+            android:padding="8dp"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btn_add_split"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="添加分割点" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_split_points"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="8dp"
+        android:background="#F5F5F5" />
+
+    <!-- 视频拼接部分 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="#DDDDDD" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="视频拼接"
+        android:textColor="#333333"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/btn_add_video"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="添加其他视频" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_videos"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="8dp"
+        android:background="#F5F5F5" />
+
+    <!-- 确认按钮 -->
+    <Button
+        android:id="@+id/btn_apply_trim"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="应用更改" />
+
+</LinearLayout> 

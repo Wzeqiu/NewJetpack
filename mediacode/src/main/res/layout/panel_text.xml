@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="文字/字幕编辑"
+        android:textColor="#333333"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- 文字输入区域 -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="输入文字内容">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|top"
+            android:inputType="textMultiLine"
+            android:lines="3"
+            android:maxLines="5" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 文字预览区域 -->
+    <FrameLayout
+        android:id="@+id/text_preview_container"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="#33000000"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/tv_text_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="#80000000"
+            android:padding="8dp"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            tools:text="预览文字" />
+    </FrameLayout>
+
+    <!-- 文字样式设置 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="文字样式"
+        android:textColor="#333333"
+        android:textSize="14sp" />
+
+    <!-- 字体大小控制 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:text="字体大小"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+        <SeekBar
+            android:id="@+id/seek_bar_font_size"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="100"
+            android:progress="50" />
+
+        <TextView
+            android:id="@+id/tv_font_size"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:text="18sp"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- 文字颜色选择器 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="文字颜色"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- 白色 -->
+                <View
+                    android:id="@+id/color_white"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="4dp"
+                    android:background="#FFFFFF"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- 黑色 -->
+                <View
+                    android:id="@+id/color_black"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="4dp"
+                    android:background="#000000"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- 红色 -->
+                <View
+                    android:id="@+id/color_red"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="4dp"
+                    android:background="#FF0000"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- 黄色 -->
+                <View
+                    android:id="@+id/color_yellow"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="4dp"
+                    android:background="#FFEB3B"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- 蓝色 -->
+                <View
+                    android:id="@+id/color_blue"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="4dp"
+                    android:background="#2196F3"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- 绿色 -->
+                <View
+                    android:id="@+id/color_green"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="4dp"
+                    android:background="#4CAF50"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- 粉色 -->
+                <View
+                    android:id="@+id/color_pink"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="4dp"
+                    android:background="#E91E63"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <!-- 紫色 -->
+                <View
+                    android:id="@+id/color_purple"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="4dp"
+                    android:background="#9C27B0"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <!-- 文字背景开关 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="文字背景"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_text_background"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true" />
+    </LinearLayout>
+
+    <!-- 时间设置 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="显示时间"
+        android:textColor="#333333"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:hint="开始时间(秒)">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_start_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:hint="结束时间(秒)">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_end_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+
+    <!-- 位置设置 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="文字位置"
+        android:textColor="#333333"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginBottom="16dp">
+
+        <Button
+            android:id="@+id/btn_position_top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:text="上方" />
+
+        <Button
+            android:id="@+id/btn_position_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:text="中间" />
+
+        <Button
+            android:id="@+id/btn_position_bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:text="下方" />
+    </LinearLayout>
+
+    <!-- 添加按钮 -->
+    <Button
+        android:id="@+id/btn_add_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="添加文字" />
+
+</LinearLayout> 

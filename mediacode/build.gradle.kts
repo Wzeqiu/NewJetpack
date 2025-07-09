@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
@@ -44,6 +45,28 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(project(":common"))
+    
+    // Media3 依赖
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.exoplayer.dash)
+    implementation(libs.media3.exoplayer.hls)
+    implementation(libs.media3.ui)
+    implementation(libs.media3.common)
+    implementation(libs.media3.session)
+    implementation(libs.androidx.media3.transformer)
+    
+    // 生命周期组件
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.fragment.ktx)
+    
+    // RecyclerView适配器
+    implementation(libs.baserecyclerviewadapterhelper4)
+    
+    // 沉浸式状态栏
+    implementation(libs.immersionbar)
+    implementation(libs.immersionbar.ktx)
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
