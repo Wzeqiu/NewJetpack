@@ -1,21 +1,19 @@
 package com.wzeqiu.mediacode
 
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.widget.SeekBar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import com.blankj.utilcode.util.Utils
-import com.common.kt.saveToAlbum
+import com.common.utils.media.saveToAlbum
 import com.common.kt.viewBinding
 import com.common.media.MediaConfig
 import com.common.media.MediaConfig.Companion.MEDIA_TYPE_VIDEO
 import com.common.media.MediaInfo
 import com.common.media.MediaManageActivity
-import com.common.utils.WatermarkUtils
+import com.common.utils.media.WatermarkUtils
 import com.wzeqiu.mediacode.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,7 +47,7 @@ class VideoActivity : AppCompatActivity() {
                             WatermarkUtils.WatermarkPosition.RIGHT_BOTTOM
                             ,0.2f,0.1f,0.5f
                         )
-                        saveToAlbum(mutableListOf(newFile1.absolutePath))
+                        saveToAlbum(newFile1.absolutePath)
 
 
                         // 使用MediaClipper裁剪视频

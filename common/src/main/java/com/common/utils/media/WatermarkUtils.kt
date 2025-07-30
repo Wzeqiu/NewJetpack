@@ -1,4 +1,4 @@
-package com.common.utils
+package com.common.utils.media
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -7,24 +7,27 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
-import android.media.MediaCodec
+import android.graphics.drawable.Drawable
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
-import android.media.MediaMuxer
 import android.util.Log
+import androidx.core.graphics.scale
+import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
-import androidx.media3.common.OverlaySettings
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.BitmapOverlay
 import androidx.media3.effect.OverlayEffect
 import androidx.media3.effect.StaticOverlaySettings
 import androidx.media3.effect.TextureOverlay
 import androidx.media3.transformer.Composition
+import androidx.media3.transformer.DefaultEncoderFactory
 import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.Transformer
+import androidx.media3.transformer.VideoEncoderSettings
 import com.blankj.utilcode.util.FileUtils
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.SimpleTarget
@@ -36,12 +39,6 @@ import java.io.File
 import java.io.FileOutputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import androidx.media3.common.Effect
-import androidx.media3.transformer.Effects
-import androidx.core.graphics.scale
-import androidx.media3.transformer.DefaultEncoderFactory
-import androidx.media3.transformer.VideoEncoderSettings
-import androidx.media3.transformer.VideoEncoderSettings.RATE_UNSET
 import kotlin.math.max
 
 /**
@@ -132,7 +129,7 @@ object WatermarkUtils {
             isDither = true
             isFilterBitmap = true
             // 使用SRC_OVER模式，让水印能够保留透明度
-            xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
+            setXfermode(PorterDuffXfermode(PorterDuff.Mode.SRC_OVER))
         }
         canvas.drawBitmap(scaledWatermark, x.toFloat(), y.toFloat(), paint)
 
@@ -285,44 +282,49 @@ object WatermarkUtils {
     /**
      * 从URL加载Bitmap或从缓存获取
      */
-    private suspend fun getOrLoadWatermarkBitmap(context: Context, url: String): Bitmap = withContext(Dispatchers.IO) {
-        // 检查缓存中是否有该水印
-        watermarkBitmapCache[url]?.let { return@withContext it }
+    private suspend fun getOrLoadWatermarkBitmap(context: Context, url: String): Bitmap =
+        withContext(Dispatchers.IO) {
+            // 检查缓存中是否有该水印
+            watermarkBitmapCache[url]?.let { return@withContext it }
 
-        // 加载并缓存水印
-        val bitmap = loadBitmapFromUrl(context, url)
-        watermarkBitmapCache[url] = bitmap
-        return@withContext bitmap
-    }
+            // 加载并缓存水印
+            val bitmap = loadBitmapFromUrl(context, url)
+            watermarkBitmapCache[url] = bitmap
+            return@withContext bitmap
+        }
 
     /**
      * 从URL加载Bitmap
      */
-    private suspend fun loadBitmapFromUrl(context: Context, url: String): Bitmap = suspendCancellableCoroutine { continuation ->
-        try {
-            Glide.with(context)
-                .asBitmap()
-                .load(url)
-                .into(object : SimpleTarget<Bitmap>() {
-                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                        continuation.resume(resource)
-                    }
+    private suspend fun loadBitmapFromUrl(context: Context, url: String): Bitmap =
+        suspendCancellableCoroutine { continuation ->
+            try {
+                Glide.with(context)
+                    .asBitmap()
+                    .load(url)
+                    .into(object : SimpleTarget<Bitmap>() {
+                        override fun onResourceReady(
+                            resource: Bitmap,
+                            transition: Transition<in Bitmap>?
+                        ) {
+                            continuation.resume(resource)
+                        }
 
-                    override fun onLoadFailed(errorDrawable: android.graphics.drawable.Drawable?) {
-                        continuation.resumeWithException(Exception("Failed to load watermark image from URL: $url"))
-                    }
-                })
+                        override fun onLoadFailed(errorDrawable: Drawable?) {
+                            continuation.resumeWithException(Exception("Failed to load watermark image from URL: $url"))
+                        }
+                    })
 
-            continuation.invokeOnCancellation {
-                // 取消Glide的加载
-                Glide.with(context).clear(null)
-            }
-        } catch (e: Exception) {
-            if (continuation.isActive) {
-                continuation.resumeWithException(e)
+                continuation.invokeOnCancellation {
+                    // 取消Glide的加载
+                    Glide.with(context).clear(null)
+                }
+            } catch (e: Exception) {
+                if (continuation.isActive) {
+                    continuation.resumeWithException(e)
+                }
             }
         }
-    }
 
     /**
      * 给视频添加水印 (使用Media3 Transformer) - 兼容新版本API
@@ -377,20 +379,27 @@ object WatermarkUtils {
                         break
                     }
                 }
-                videoBitrate= max(videoBitrate,8_000_000)
+                videoBitrate = max(videoBitrate, 8_000_000)
             } catch (e: Exception) {
-                Log.w(WatermarkUtils.TAG, "无法获取视频编码参数，将使用默认值", e)
+                Log.w(TAG, "无法获取视频编码参数，将使用默认值", e)
             } finally {
                 extractor.release()
             }
-            Log.d(WatermarkUtils.TAG, "原视频参数 - Bitrate: $videoBitrate, Profile: $videoProfile, Level: $videoLevel")
+            Log.d(
+                TAG,
+                "原视频参数 - Bitrate: $videoBitrate, Profile: $videoProfile, Level: $videoLevel"
+            )
 
 
             // 获取视频尺寸
             val retriever = MediaMetadataRetriever()
             retriever.setDataSource(inputVideoFile.absolutePath)
-            val videoWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toInt() ?: 1920
-            val videoHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toInt() ?: 1080
+            val videoWidth =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toInt()
+                    ?: 1920
+            val videoHeight =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toInt()
+                    ?: 1080
             retriever.release()
 
             // 计算水印大小
@@ -398,7 +407,7 @@ object WatermarkUtils {
             val watermarkHeight = (watermarkBitmap.height * watermarkWidth / watermarkBitmap.width)
 
             // 调整水印大小
-            val scaledWatermarkBitmap = watermarkBitmap.scale(watermarkWidth, watermarkHeight,true)
+            val scaledWatermarkBitmap = watermarkBitmap.scale(watermarkWidth, watermarkHeight, true)
 
             // 计算水印位置
             val bFrameX: Float
@@ -409,37 +418,41 @@ object WatermarkUtils {
             val oFrameY: Float
 
             when (position) {
-                WatermarkUtils.WatermarkPosition.LEFT_TOP -> {
-                    bFrameX =-1f+marginFactor
-                    bFrameY = 1f-marginFactor
-                    oFrameX=-1f
-                    oFrameY=1f
+                WatermarkPosition.LEFT_TOP -> {
+                    bFrameX = -1f + marginFactor
+                    bFrameY = 1f - marginFactor
+                    oFrameX = -1f
+                    oFrameY = 1f
                 }
-                WatermarkUtils.WatermarkPosition.RIGHT_TOP -> {
-                    bFrameX =1f-marginFactor
-                    bFrameY = 1f-marginFactor
 
-                    oFrameX=1f
-                    oFrameY=1f
-                }
-                WatermarkUtils.WatermarkPosition.LEFT_BOTTOM -> {
-                    bFrameX =-1f+marginFactor
-                    bFrameY = -1f+marginFactor
+                WatermarkPosition.RIGHT_TOP -> {
+                    bFrameX = 1f - marginFactor
+                    bFrameY = 1f - marginFactor
 
-                    oFrameX=-1f
-                    oFrameY=-1f
+                    oFrameX = 1f
+                    oFrameY = 1f
                 }
-                WatermarkUtils.WatermarkPosition.RIGHT_BOTTOM -> {
-                    bFrameX = 1f-marginFactor
-                    bFrameY = -1f+marginFactor
-                    oFrameX=1f
-                    oFrameY=-1f
+
+                WatermarkPosition.LEFT_BOTTOM -> {
+                    bFrameX = -1f + marginFactor
+                    bFrameY = -1f + marginFactor
+
+                    oFrameX = -1f
+                    oFrameY = -1f
                 }
-                WatermarkUtils.WatermarkPosition.CENTER -> {
+
+                WatermarkPosition.RIGHT_BOTTOM -> {
+                    bFrameX = 1f - marginFactor
+                    bFrameY = -1f + marginFactor
+                    oFrameX = 1f
+                    oFrameY = -1f
+                }
+
+                WatermarkPosition.CENTER -> {
                     bFrameX = 0f
-                    bFrameY =0f
-                    oFrameX=0f
-                    oFrameY=0f
+                    bFrameY = 0f
+                    oFrameX = 0f
+                    oFrameY = 0f
                 }
             }
 
@@ -447,19 +460,23 @@ object WatermarkUtils {
 
             // 创建水印覆盖效果
             val overlaySettings = StaticOverlaySettings.Builder()
-                .setAlphaScale(alpha )  // 设置透明度
+                .setAlphaScale(alpha)  // 设置透明度
                 .setBackgroundFrameAnchor(bFrameX, bFrameY) // 使用根据position计算的NDC坐标
                 .setOverlayFrameAnchor(oFrameX, oFrameY)
                 .build()
 
-            val bitmapOverlay: TextureOverlay = BitmapOverlay.createStaticBitmapOverlay(scaledWatermarkBitmap, overlaySettings)
+            val bitmapOverlay: TextureOverlay =
+                BitmapOverlay.createStaticBitmapOverlay(scaledWatermarkBitmap, overlaySettings)
 
             // 创建Media3转换任务
             val result = withContext(Dispatchers.Main) {
                 suspendCancellableCoroutine<Boolean> { continuation ->
                     val listener = object : Transformer.Listener {
-                        override fun onCompleted(composition: Composition, exportResult: ExportResult) {
-                            Log.d(WatermarkUtils.TAG, "视频水印添加成功")
+                        override fun onCompleted(
+                            composition: Composition,
+                            exportResult: ExportResult
+                        ) {
+                            Log.d(TAG, "视频水印添加成功")
                             if (continuation.isActive) continuation.resume(true)
                         }
 
@@ -468,7 +485,7 @@ object WatermarkUtils {
                             exportResult: ExportResult,
                             exception: ExportException
                         ) {
-                            Log.e(WatermarkUtils.TAG, "视频水印添加失败", exception)
+                            Log.e(TAG, "视频水印添加失败", exception)
                             if (continuation.isActive) {
                                 continuation.resume(false)
                             }
@@ -477,9 +494,9 @@ object WatermarkUtils {
                     // 配置转换器，保留原始视频质量
                     val settingsBuilder = VideoEncoderSettings.Builder()    // 配置转换器，保留原始视频质量
                         .setBitrate(videoBitrate)
-                        .setEncoderPerformanceParameters(30, RATE_UNSET)
+                        .setEncoderPerformanceParameters(30, VideoEncoderSettings.RATE_UNSET)
                     if (videoProfile != -1 && videoLevel != -1) {
-                        settingsBuilder.setEncodingProfileLevel(videoProfile,videoLevel)
+                        settingsBuilder.setEncodingProfileLevel(videoProfile, videoLevel)
                     }
 
                     val encoderFactory = DefaultEncoderFactory.Builder(context)
@@ -553,7 +570,7 @@ object WatermarkUtils {
         try {
             // 获取或加载水印位图
             val watermarkBitmap = getOrLoadWatermarkBitmap(context, watermarkUrl)
-            
+
             val result = addWatermarkToVideo(
                 context,
                 inputVideoFile,
@@ -599,14 +616,14 @@ object WatermarkUtils {
         try {
             // 使用文件路径作为缓存key
             val filePath = watermarkFile.absolutePath
-            
+
             // 从缓存获取或加载水印
             val watermarkBitmap = watermarkBitmapCache[filePath] ?: run {
                 val bitmap = BitmapFactory.decodeFile(filePath)
                 watermarkBitmapCache[filePath] = bitmap
                 bitmap
             }
-            
+
             val result = addWatermarkToVideo(
                 context,
                 inputVideoFile,
@@ -624,7 +641,7 @@ object WatermarkUtils {
             return@withContext false
         }
     }
-    
+
     /**
      * 清除所有水印缓存
      */
@@ -632,7 +649,7 @@ object WatermarkUtils {
         watermarkBitmapCache.values.forEach { it.recycle() }
         watermarkBitmapCache.clear()
     }
-    
+
     /**
      * 清除指定URL的水印缓存
      */

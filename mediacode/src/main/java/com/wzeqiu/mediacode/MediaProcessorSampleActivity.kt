@@ -2,7 +2,6 @@ package com.wzeqiu.mediacode
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
@@ -12,13 +11,13 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.common.kt.saveToAlbum
+import com.common.utils.media.saveToAlbum
 import com.common.media.MediaConfig
 import com.common.media.MediaInfo
 import com.common.media.MediaManageActivity
 import com.common.utils.media.MediaProcessor
-import com.hjq.permissions.Permission
 import com.hjq.permissions.XXPermissions
+import com.hjq.permissions.permission.PermissionLists
 import com.wzeqiu.mediacode.editor.VideoEditorActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -129,7 +128,7 @@ class MediaProcessorSampleActivity : AppCompatActivity() {
     // 请求权限并选择媒体
     private fun requestPermissionsAndSelectMedia(mediaType: Int) {
         XXPermissions.with(this)
-            .permission(Permission.READ_MEDIA_IMAGES, Permission.READ_MEDIA_VIDEO, Permission.READ_MEDIA_AUDIO)
+            .permissions(arrayOf(PermissionLists.getReadMediaImagesPermission(), PermissionLists.getReadMediaVideoPermission(), PermissionLists.getReadMediaAudioPermission()))
             .request { _, allGranted ->
                 if (allGranted) {
                     // 创建媒体选择配置
@@ -230,7 +229,7 @@ class MediaProcessorSampleActivity : AppCompatActivity() {
                     )
                 }
 
-                this@MediaProcessorSampleActivity.saveToAlbum(mutableListOf(outputFile.absolutePath))
+                this@MediaProcessorSampleActivity.saveToAlbum(outputFile.absolutePath)
                 tvStatus.text =
                     "视频裁剪成功：${outputFile.name}，时长: ${formatDuration(trimDuration)}"
                 Toast.makeText(
@@ -283,7 +282,7 @@ class MediaProcessorSampleActivity : AppCompatActivity() {
                         height
                     )
                 }
-                this@MediaProcessorSampleActivity.saveToAlbum(mutableListOf(outputFile.absolutePath))
+                this@MediaProcessorSampleActivity.saveToAlbum(outputFile.absolutePath)
                 tvStatus.text = "分辨率修改成功: ${outputFile.name}"
                 Toast.makeText(this@MediaProcessorSampleActivity, "分辨率修改成功", Toast.LENGTH_SHORT)
                     .show()

@@ -7,13 +7,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.Utils
 import com.common.kt.activity.launch
-import com.common.kt.saveToAlbum
+import com.common.utils.media.saveToAlbum
 import com.common.kt.viewBinding
 import com.common.media.MediaConfig
 import com.common.media.MediaConfig.Companion.MEDIA_TYPE_IMAGE
 import com.common.media.MediaInfo
 import com.common.media.MediaManageActivity
-import com.common.utils.WatermarkUtils
+import com.common.utils.media.WatermarkUtils
 import com.wzeqiu.mediacode.databinding.ActivityHomeBinding
 import com.wzeqiu.mediacode.editor.VideoEditorActivity
 import com.wzeqiu.mediacode.editor.test.IntegrationTestActivity
@@ -77,7 +77,7 @@ class HomeActivity : AppCompatActivity() {
                                     newFile1,
                                 )
                                 Log.e("AAAAAA", "newFile1 path===" + newFile1.absolutePath)
-                                saveToAlbum(mutableListOf(newFile1.absolutePath))
+                                saveToAlbum(newFile1.absolutePath)
                             }
                         }
 
