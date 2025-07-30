@@ -1,7 +1,5 @@
 package com.common.kt.activity
 
-import android.Manifest.permission.READ_MEDIA_IMAGES
-import android.Manifest.permission.READ_MEDIA_VIDEO
 import android.content.Intent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -13,6 +11,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.hjq.permissions.XXPermissions
+import com.hjq.permissions.permission.PermissionLists
+import com.hjq.permissions.permission.base.IPermission
 import java.util.concurrent.atomic.AtomicInteger
 
 
@@ -91,17 +91,17 @@ fun LifecycleOwner.getActivity(): FragmentActivity {
 
 
 fun AppCompatActivity.requestPermission(
-    vararg permission: String = arrayOf(READ_MEDIA_IMAGES, READ_MEDIA_VIDEO),
+    vararg permission:  IPermission = arrayOf(PermissionLists.getReadMediaImagesPermission(), PermissionLists.getReadMediaVideoPermission()),
     action: (Boolean) -> Unit = {}
 ) {
-    XXPermissions.with(this).permission(permission)
+    XXPermissions.with(this).permissions(permission)
         .request { p0, p1 -> if (p1) action(p1) }
 }
 
 fun Fragment.requestPermission(
-    vararg permission: String = arrayOf(READ_MEDIA_IMAGES, READ_MEDIA_VIDEO),
+    vararg permission:  IPermission = arrayOf(PermissionLists.getReadMediaImagesPermission(), PermissionLists.getReadMediaVideoPermission()),
     action: (Boolean) -> Unit = {}
 ) {
-    XXPermissions.with(this).permission(permission)
+    XXPermissions.with(this).permissions(permission)
         .request { p0, p1 -> if (p1) action(p1) }
 }

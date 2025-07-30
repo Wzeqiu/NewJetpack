@@ -20,6 +20,7 @@ import com.blankj.utilcode.util.Utils
 import com.common.common.R
 import com.common.kt.activity.requestPermission
 import com.common.utils.getMimeType
+import com.hjq.permissions.permission.PermissionLists
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,7 +35,7 @@ import java.io.IOException
 fun AppCompatActivity.saveToAlbum(paths: List<String>) {
     if (paths.isEmpty()) return
 
-    requestPermission(MANAGE_EXTERNAL_STORAGE) {
+    requestPermission(PermissionLists.getManageExternalStoragePermission()) {
         paths.forEach { path ->
             when {
                 isImageFile(path) -> saveImageToGallery(path)
@@ -172,7 +173,7 @@ fun AppCompatActivity.saveToAlbumAsync(paths: List<String>, onComplete: (Int) ->
         return
     }
 
-    requestPermission(MANAGE_EXTERNAL_STORAGE) {
+    requestPermission(PermissionLists.getManageExternalStoragePermission()) {
         lifecycleScope.launch(Dispatchers.Main) {
             var successCount = 0
 

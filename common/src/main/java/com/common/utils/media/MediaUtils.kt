@@ -45,7 +45,7 @@ object MediaUtils {
      * @return MediaInfo 媒体信息对象
      */
     @Throws(Exception::class)
-    fun getMediaInfo(path: String): MediaInfo? = MediaMetadataRetriever().runCatching {
+    fun getMediaInfo(path: String): MediaInfo? = MediaMetadataRetriever ().runCatching {
         setDataSource(path)
 
         // 获取媒体类型

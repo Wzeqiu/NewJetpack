@@ -10,6 +10,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.common.kt.singleClick
 import com.common.ui.BaseActivity
+import com.gyf.immersionbar.ktx.immersionBar
 import com.wzeqiu.permission.databinding.ActivityMainBinding
 
 class MainActivity :BaseActivity<ActivityMainBinding>() {
@@ -49,7 +50,9 @@ class MainActivity :BaseActivity<ActivityMainBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
+        binding.apply {
+            immersionBar { titleBarMarginTop(main) }
+        }
         // 初始化启动器
         pickContactLauncher = PrivacyFriendlyAccessHelper.registerPickContactLauncher(this) {
                 uri -> handleContactPicked(uri)
@@ -97,6 +100,11 @@ class MainActivity :BaseActivity<ActivityMainBinding>() {
                     Log.d("LocationDemo", "粗略位置权限被拒绝")
                 }
             )
+        }
+
+        binding.btnRequestPermissions.singleClick {
+            startActivity(Intent(this@MainActivity, PermissionsActivity::class.java))
+
         }
 
     }

@@ -113,6 +113,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             startActivity(Intent(this@MainActivity, WebViewActivity::class.java))
         }
 
+        binding.ImageMerge.singleClick {
+            startActivity(Intent(this@MainActivity, ImageMergeActivity::class.java))
+        }
+
     }
 
 
