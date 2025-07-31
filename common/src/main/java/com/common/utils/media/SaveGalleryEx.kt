@@ -35,7 +35,7 @@ fun AppCompatActivity.saveToAlbum(vararg paths: String): List<String> {
         when {
             file.isImage() -> result.add(saveImageToGallery(file))
             file.isVideo() -> result.add(saveVideoToGallery(file))
-            else -> Log.w("SaveToAlbum", "不支持的文件类型: $file")
+            else -> Log.w("SaveGalleryEx", "不支持的文件类型: $file")
         }
     }
     ToastUtils.showShort("已保存到相册")
@@ -53,7 +53,7 @@ fun AppCompatActivity.saveToAlbum(vararg paths: String, callback: (List<String>)
             when {
                 file.isImage() -> result.add(saveImageToGallery(file))
                 file.isVideo() -> result.add(saveVideoToGallery(file))
-                else -> Log.w("SaveToAlbum", "不支持的文件类型: $file")
+                else -> Log.w("SaveGalleryEx", "不支持的文件类型: $file")
             }
         }
         withContext(Dispatchers.Main) {
@@ -73,7 +73,7 @@ private fun Context.saveImageToGallery(file: File): String {
         val values = ContentValues().apply {
             put(
                 MediaStore.Images.Media.DISPLAY_NAME,
-                "${System.currentTimeMillis()}_${Random.nextInt(1000000)}_$fileName"
+                "${System.currentTimeMillis()}_${Random.nextInt(1000)}_$fileName"
             )
             put(MediaStore.Images.Media.MIME_TYPE, mime)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -109,7 +109,7 @@ private fun Context.saveImageToGallery(file: File): String {
             }
         } ?: ""
     }.onFailure {
-        Log.e("SaveToAlbum", "保存图片失败", it)
+        Log.e("SaveGalleryEx", "保存图片失败", it)
         ToastUtils.showShort("保存图片失败: ${it.message}")
     }.getOrDefault("")
 }
@@ -124,7 +124,7 @@ private fun Context.saveVideoToGallery(file: File): String {
         val values = ContentValues().apply {
             put(
                 MediaStore.Video.Media.DISPLAY_NAME,
-                "${System.currentTimeMillis()}_${Random.nextInt(1000000)}_$fileName"
+                "${System.currentTimeMillis()}_${Random.nextInt(1000)}_$fileName"
             )
             put(MediaStore.Video.Media.MIME_TYPE, mime)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -155,7 +155,7 @@ private fun Context.saveVideoToGallery(file: File): String {
             }
         } ?: ""
     }.onFailure {
-        Log.e("SaveToAlbum", "保存视频失败", it)
+        Log.e("SaveGalleryEx", "保存视频失败", it)
         ToastUtils.showShort("保存视频失败: ${it.message}")
     }.getOrDefault("")
 }
@@ -164,7 +164,7 @@ private fun Context.saveVideoToGallery(file: File): String {
  * 通知媒体库扫描新文件
  */
 private fun Context.notifyMediaScan(filePath: String, mimeType: String) {
-    try {
+    runCatching {
         MediaScannerConnection.scanFile(
             this,
             arrayOf(filePath),
@@ -172,8 +172,8 @@ private fun Context.notifyMediaScan(filePath: String, mimeType: String) {
         ) { _, scanUri ->
             Log.d("MediaScanner", "文件已扫描: $filePath -> $scanUri")
         }
-    } catch (e: Exception) {
-        Log.e("MediaScanner", "媒体扫描失败", e)
+    }.onFailure {
+        Log.e("MediaScanner", "媒体扫描失败", it)
     }
 }
 

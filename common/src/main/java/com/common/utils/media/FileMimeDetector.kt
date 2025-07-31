@@ -2,7 +2,6 @@ package com.common.utils.media
 
 import java.io.File
 import java.io.FileInputStream
-import java.io.IOException
 
 object FileMimeDetector {
 
@@ -37,16 +36,13 @@ object FileMimeDetector {
     /**
      * 读取文件头部的指定字节数
      */
-    private fun File.readHeadBytes(length: Int = HEAD_BYTES_LENGTH): ByteArray? = try {
+    private fun File.readHeadBytes(length: Int = HEAD_BYTES_LENGTH): ByteArray? = runCatching {
         FileInputStream(this).use { inputStream ->
             val bytes = ByteArray(length)
             val read = inputStream.read(bytes, 0, length)
             bytes.takeIf { read > 0 }
         }
-    } catch (e: IOException) {
-        e.printStackTrace()
-        null
-    }
+    }.getOrDefault(null)
 
     /**
      * 检测图片类型并返回对应的MIME类型
