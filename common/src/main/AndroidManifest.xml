@@ -20,5 +20,7 @@
         <activity
             android:name="com.common.ui.webView.WebViewActivity"
             android:exported="false" />
+
+        <meta-data android:name="ScopedStorage" android:value="true" />
     </application>
 </manifest>

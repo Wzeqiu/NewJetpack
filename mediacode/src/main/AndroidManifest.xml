@@ -9,6 +9,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NewJetpack">
         <activity
+            android:name=".ImageCropSample"
+            android:exported="false" />
+        <activity
             android:name=".MediaProcessorSampleActivity"
             android:exported="false" />
         <activity

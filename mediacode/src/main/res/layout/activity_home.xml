@@ -52,5 +52,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="集成测试" />
+    <Button
+        android:id="@+id/imgCut"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="图片裁剪" />
 
 </LinearLayout>

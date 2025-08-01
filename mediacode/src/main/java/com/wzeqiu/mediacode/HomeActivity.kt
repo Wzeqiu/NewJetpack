@@ -27,6 +27,9 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(viewBinding.root)
         viewBinding.apply {
+            imgCut.setOnClickListener {
+                startActivity(Intent(this@HomeActivity, ImageCropSample::class.java))
+            }
             btVideo.setOnClickListener {
                 startActivity(Intent(this@HomeActivity, VideoActivity::class.java))
             }
